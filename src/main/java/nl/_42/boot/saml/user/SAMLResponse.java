@@ -18,17 +18,25 @@ public class SAMLResponse {
 
     private final SAMLCredential credential;
 
-    public Value get(String key) {
-        Attribute attribute = credential.getAttribute(key);
-        return new Value(attribute);
+    public SAMLAttribute getAttribute(String name) {
+        Attribute attribute = get(name);
+        return new SAMLAttribute(attribute);
     }
 
-    public Stream<Value> stream() {
-        return credential.getAttributes().stream().map(Value::new);
+    private Attribute get(String name) {
+        if (StringUtils.isBlank(name)) {
+            return null;
+        }
+
+        return credential.getAttribute(name);
+    }
+
+    public Stream<SAMLAttribute> getAttributes() {
+        return credential.getAttributes().stream().map(SAMLAttribute::new);
     }
 
     @AllArgsConstructor
-    public static class Value {
+    public static class SAMLAttribute {
 
         private final Attribute attribute;
 
@@ -36,11 +44,11 @@ public class SAMLResponse {
             return attribute.getName();
         }
 
-        public List<String> values() {
+        public List<String> getValues() {
             return stream().collect(Collectors.toList());
         }
 
-        public Optional<String> value() {
+        public Optional<String> getValue() {
             return stream().findFirst();
         }
 

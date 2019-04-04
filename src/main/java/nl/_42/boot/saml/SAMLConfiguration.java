@@ -87,6 +87,9 @@ import java.util.Timer;
  */
 public class SAMLConfiguration {
 
+    private static final String DEFAULT_SIGNATURE_ALGORITH_URI = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;
+    private static final int    DEFAULT_SESSION_TIMOUT = 21600;
+
     private static final String IDP_URL = "saml.idp_url";
     private static final String METADATA_URL = "saml.metadata_url";
     private static final String LOGOUT_URL = "saml.logout_url";
@@ -107,7 +110,7 @@ public class SAMLConfiguration {
     private static final String REMOVE_COOKIES = "saml.remove_all_cookies_upon_authentication_failure";
     private static final String FORCE_PRINCIPAL = "saml.force_principal";
 
-    private static final String TIMEOUT_KEY = "saml.session.timeout";
+    private static final String SESSION_TIMEOUT_KEY = "saml.session.timeout";
     private static final String SUCCESS_URL_KEY = "saml.success_url";
     private static final String FORBIDDEN_URL_KEY = "saml.forbidden_url";
     private static final String EXPIRED_URL_KEY = "saml.expired_url";
@@ -143,10 +146,10 @@ public class SAMLConfiguration {
         properties.setRoleName(environment.getProperty(ROLE_NAME));
         properties.setAuthorizedRoles(environment.getProperty(AUTHORIZED_ROLES));
 
-        properties.setRsaSignatureAlgorithmUri(environment.getProperty(RSA_SIGNATURE_ALGORITHM_URI, SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1));
+        properties.setRsaSignatureAlgorithmUri(environment.getProperty(RSA_SIGNATURE_ALGORITHM_URI, DEFAULT_SIGNATURE_ALGORITH_URI));
         properties.setMaxAuthenticationAge(environment.getProperty(MAX_AUTHENTICATION_AGE, Integer.class, 9999));
         properties.setForceAuthN(environment.getProperty(FORCE_AUTH_N, Boolean.class, false));
-        properties.setMetaDataTrustCheck(environment.getProperty(METADATA_TRUST_CHECK, Boolean.class, true));
+        properties.setMetaDataTrustCheck(environment.getProperty(METADATA_TRUST_CHECK, Boolean.class, false));
         properties.setInResponseCheck(environment.getProperty(RESPONSE_CHECK, Boolean.class, false));
 
         return properties;
@@ -195,7 +198,7 @@ public class SAMLConfiguration {
         generator.setSamlDiscovery(samlDiscovery());
         generator.setKeyManager(keyManager());
 
-        // Only allow for 'post' binding by overriding the bindingsSSO value of the parent MetadataGenerator class.
+        // Only allow for 'post' binding by overriding the bindingsSSO getValue of the parent MetadataGenerator class.
         generator.setBindingsSSO(Arrays.asList("post"));
         return generator;
     }
@@ -383,7 +386,7 @@ public class SAMLConfiguration {
     @Bean
     public SAMLSuccessHandler successRedirectHandler() {
         SAMLSuccessHandler handler = new SAMLSuccessHandler();
-        handler.setTimeout(environment.getProperty(TIMEOUT_KEY, int.class, 0));
+        handler.setTimeout(environment.getProperty(SESSION_TIMEOUT_KEY, int.class, DEFAULT_SESSION_TIMOUT));
         handler.setTargetUrl(environment.getRequiredProperty(SUCCESS_URL_KEY));
         return handler;
     }

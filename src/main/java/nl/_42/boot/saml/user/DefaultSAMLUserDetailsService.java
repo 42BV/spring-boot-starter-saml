@@ -58,7 +58,7 @@ public class DefaultSAMLUserDetailsService implements SAMLUserDetailsService {
 
     private User load(SAMLResponse response) {
         log.debug("Loading user by SAML credentials...");
-        response.stream().forEach(attr ->
+        response.getAttributes().forEach(attr ->
           log.trace("Attribute: {} = '{}'", attr.getName(), attr.stream().collect(Collectors.joining(", ")))
         );
 

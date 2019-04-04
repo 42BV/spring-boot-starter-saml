@@ -21,14 +21,14 @@ public class SAMLUser {
     public SAMLUser(SAMLResponse response, SAMLProperties properties) {
         this.response = response;
 
-        userId = response.get(properties.getUserIdName()).value().orElse("");
+        userId = response.getAttribute(properties.getUserIdName()).getValue().orElse("");
         if (StringUtils.isBlank(userId)) {
             throw new IllegalStateException(format("User identifier is required, missing attribute '%s'", properties.getUserIdName()));
         }
 
-        displayName = response.get(properties.getDisplayName()).value().orElse(userId);
-        roles = response.get(properties.getRoleName()).values();
-        organisations = response.get(properties.getOrganisationName()).values();
+        displayName = response.getAttribute(properties.getDisplayName()).getValue().orElse(userId);
+        roles = response.getAttribute(properties.getRoleName()).getValues();
+        organisations = response.getAttribute(properties.getOrganisationName()).getValues();
     }
 
 }
