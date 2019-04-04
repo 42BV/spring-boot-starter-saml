@@ -1,9 +1,7 @@
 package nl._42.boot.saml.http;
 
-import nl._42.boot.saml.SAMLEnabledCondition;
 import nl._42.boot.saml.SAMLProperties;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.saml.metadata.MetadataManager;
 import org.springframework.stereotype.Controller;
@@ -15,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 
 @Controller
-@Conditional(SAMLEnabledCondition.class)
 @RequestMapping("/saml")
 public class SAMLController {
 

@@ -2,6 +2,7 @@ package nl._42.boot.saml;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nl._42.boot.saml.http.SAMLController;
 import nl._42.boot.saml.http.SAMLDefaultEntryPoint;
 import nl._42.boot.saml.http.SAMLFailureHandler;
 import nl._42.boot.saml.http.SAMLSuccessHandler;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -47,6 +49,7 @@ import org.springframework.security.saml.metadata.ExtendedMetadataDelegate;
 import org.springframework.security.saml.metadata.MetadataDisplayFilter;
 import org.springframework.security.saml.metadata.MetadataGenerator;
 import org.springframework.security.saml.metadata.MetadataGeneratorFilter;
+import org.springframework.security.saml.metadata.MetadataManager;
 import org.springframework.security.saml.parser.ParserPoolHolder;
 import org.springframework.security.saml.processor.HTTPArtifactBinding;
 import org.springframework.security.saml.processor.HTTPPAOS11Binding;
@@ -85,6 +88,7 @@ import java.util.Timer;
 /**
  * Enable SAML configuration.
  */
+@Configuration
 public class SAMLConfiguration {
 
     private static final String DEFAULT_SIGNATURE_ALGORITH_URI = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;
@@ -329,10 +333,10 @@ public class SAMLConfiguration {
 
     @Bean
     public SAMLEntryPoint samlEntryPoint() {
-        SAMLEntryPoint samlEntryPoint = new SAMLDefaultEntryPoint(samlUrl("**"));
-        samlEntryPoint.setFilterProcessesUrl("/saml/login");
-        samlEntryPoint.setDefaultProfileOptions(defaultWebSSOProfileOptions());
-        return samlEntryPoint;
+        SAMLEntryPoint entry = new SAMLDefaultEntryPoint(samlUrl("**"));
+        entry.setFilterProcessesUrl("/saml/login");
+        entry.setDefaultProfileOptions(defaultWebSSOProfileOptions());
+        return entry;
     }
 
     @Bean
@@ -517,6 +521,11 @@ public class SAMLConfiguration {
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;
+    }
+
+    @Bean
+    public SAMLController samlController(MetadataManager metadataManager) {
+        return new SAMLController(samlProperties(), metadataManager);
     }
 
     @Slf4j
