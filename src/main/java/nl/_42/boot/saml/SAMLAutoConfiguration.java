@@ -71,8 +71,6 @@ import org.springframework.security.saml.websso.WebSSOProfileConsumerImpl;
 import org.springframework.security.saml.websso.WebSSOProfileECPImpl;
 import org.springframework.security.saml.websso.WebSSOProfileImpl;
 import org.springframework.security.saml.websso.WebSSOProfileOptions;
-import org.springframework.security.web.DefaultSecurityFilterChain;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
@@ -354,21 +352,16 @@ public class SAMLAutoConfiguration {
 
     @Bean
     public SAMLFilter samlFilterChain() {
-        List<SecurityFilterChain> chains = new ArrayList<>();
-        chains.add(buildFilterChain("/**", samlMetadataGeneratorFilter()));
-        chains.add(buildFilterChain("/saml/login/**", samlEntryPoint()));
-        chains.add(buildFilterChain("/saml/logout/**", samlLogoutFilter()));
-        chains.add(buildFilterChain("/saml/metadata/**", samlMetadataDisplayFilter()));
-        chains.add(buildFilterChain("/saml/SSO/**", samlWebSSOProcessingFilter()));
-        chains.add(buildFilterChain("/saml/SSOHoK/**", samlWebSSOHoKProcessingFilter()));
-        chains.add(buildFilterChain("/saml/SingleLogout/**", samlLogoutProcessingFilter()));
-        chains.add(buildFilterChain("/saml/discovery/**", samlDiscovery()));
-        return new SAMLFilter(chains);
-    }
-
-    private SecurityFilterChain buildFilterChain(String url, Filter filter) {
-        AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
-        return new DefaultSecurityFilterChain(matcher, filter);
+        SAMLFilter chain = new SAMLFilter();
+        chain.register("/saml/**", samlMetadataGeneratorFilter());
+        chain.register("/saml/login/**", samlEntryPoint());
+        chain.register("/saml/logout/**", samlLogoutFilter());
+        chain.register("/saml/metadata/**", samlMetadataDisplayFilter());
+        chain.register("/saml/SSO/**", samlWebSSOProcessingFilter());
+        chain.register("/saml/SSOHoK/**", samlWebSSOHoKProcessingFilter());
+        chain.register("/saml/SingleLogout/**", samlLogoutProcessingFilter());
+        chain.register("/saml/discovery/**", samlDiscovery());
+        return chain;
     }
 
     @Bean
