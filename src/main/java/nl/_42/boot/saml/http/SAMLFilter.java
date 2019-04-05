@@ -1,6 +1,7 @@
 package nl._42.boot.saml.http;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.saml.metadata.MetadataGeneratorFilter;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -19,45 +20,44 @@ import java.util.List;
 @Slf4j
 public class SAMLFilter extends GenericFilterBean {
 
-  private List<SecurityFilterChain> chains = new ArrayList<>();
+  private final MetadataGeneratorFilter generator;
 
-  public void register(String url, Filter filter) {
+  private final List<SecurityFilterChain> filters = new ArrayList<>();
+
+  public SAMLFilter(MetadataGeneratorFilter generator) {
+    this.generator = generator;
+  }
+
+  public void on(String url, Filter filter) {
     AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
-    chains.add(new DefaultSecurityFilterChain(matcher, filter));
+    filters.add(new DefaultSecurityFilterChain(matcher, filter));
   }
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
     HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-    List<Filter> filters = getFilters(httpServletRequest);
+    Filter filter = getFilter(httpServletRequest);
 
-    if (filters.isEmpty()) {
-      // Not a SAML request, continue on regular chain
+    if (filter == null) {
       chain.doFilter(request, response);
     } else {
-      // Detected SAML request, invoke internal handlers
-      handle(request, response, filters, chain);
+      proceed(request, response, filter, chain);
     }
   }
 
-  private void handle(ServletRequest request, ServletResponse response, List<Filter> filters, FilterChain chain) throws IOException, ServletException {
-    log.trace("Started SAML filter");
+  private void proceed(ServletRequest request, ServletResponse response, Filter filter, FilterChain chain) throws IOException, ServletException {
+    // Ensure metadata generation is performed
+    generator.doFilter(request, response, (req, res) -> {});
 
-    for (Filter filter : filters) {
-      filter.doFilter(request, response, chain);
-    }
-
-    log.trace("Ended SAML filter");
+    // Perform SAML action
+    filter.doFilter(request, response, chain);
   }
 
-  private List<Filter> getFilters(HttpServletRequest request) {
-    List<Filter> filters = new ArrayList<>();
-    for (SecurityFilterChain chain : chains) {
-      if (chain.matches(request)) {
-        filters.addAll(chain.getFilters());
-      }
-    }
-    return filters;
+  private Filter getFilter(HttpServletRequest request) {
+    return filters.stream()
+                  .filter(filter -> filter.matches(request))
+                  .flatMap(chain -> chain.getFilters().stream())
+                  .findFirst().orElse(null);
   }
 
 }

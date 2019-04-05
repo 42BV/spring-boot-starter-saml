@@ -352,15 +352,14 @@ public class SAMLAutoConfiguration {
 
     @Bean
     public SAMLFilter samlFilterChain() {
-        SAMLFilter chain = new SAMLFilter();
-        chain.register("/saml/**", samlMetadataGeneratorFilter());
-        chain.register("/saml/login/**", samlEntryPoint());
-        chain.register("/saml/logout/**", samlLogoutFilter());
-        chain.register("/saml/metadata/**", samlMetadataDisplayFilter());
-        chain.register("/saml/SSO/**", samlWebSSOProcessingFilter());
-        chain.register("/saml/SSOHoK/**", samlWebSSOHoKProcessingFilter());
-        chain.register("/saml/SingleLogout/**", samlLogoutProcessingFilter());
-        chain.register("/saml/discovery/**", samlDiscovery());
+        SAMLFilter chain = new SAMLFilter(samlMetadataGeneratorFilter());
+        chain.on("/saml/login/**", samlEntryPoint());
+        chain.on("/saml/logout/**", samlLogoutFilter());
+        chain.on("/saml/metadata/**", samlMetadataDisplayFilter());
+        chain.on("/saml/SSO/**", samlWebSSOProcessingFilter());
+        chain.on("/saml/SSOHoK/**", samlWebSSOHoKProcessingFilter());
+        chain.on("/saml/SingleLogout/**", samlLogoutProcessingFilter());
+        chain.on("/saml/discovery/**", samlDiscovery());
         return chain;
     }
 
