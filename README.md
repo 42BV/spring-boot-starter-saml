@@ -4,30 +4,7 @@ Library for integrating SAML (ADFS) authentication with Spring Boot / Security.
 
 ## Usage
 
-Register beans and place in filter chain.
-
-```java
-@EnableSAML
-@Configuration
-@Conditional(SAMLEnabledCondition.class)
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-    
-    @Autowired
-    private MetadataGeneratorFilter samlMetadataGeneratorFilter;
-    
-    @Autowired
-    private FilterChainProxy samlFilterChain;
-    
-    @Override
-    protected void configure(HttpSecurity http) {
-      http.addFilterBefore(samlMetadataGeneratorFilter, BasicAuthenticationFilter.class);
-      http.addFilterAfter(samlFilterChain, MetadataGeneratorFilter.class);
-    }
-    
-}
-```
-
-Required configuration:
+Include the dependency in your Spring Boot application and configure:
 
 ```yaml
 saml:
@@ -43,7 +20,7 @@ saml:
   forbidden_url: /#/forbidden
 ```
 
-Additional (optional) configuration:
+Additional configuration can also be supplied:
 
 ```yaml
 saml:

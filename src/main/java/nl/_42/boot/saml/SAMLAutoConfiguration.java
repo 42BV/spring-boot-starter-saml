@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl._42.boot.saml.http.SAMLDefaultEntryPoint;
 import nl._42.boot.saml.http.SAMLFailureHandler;
+import nl._42.boot.saml.http.SAMLFilter;
 import nl._42.boot.saml.http.SAMLSuccessHandler;
 import nl._42.boot.saml.key.KeyManagers;
 import nl._42.boot.saml.key.KeystoreProperties;
@@ -71,13 +72,11 @@ import org.springframework.security.saml.websso.WebSSOProfileECPImpl;
 import org.springframework.security.saml.websso.WebSSOProfileImpl;
 import org.springframework.security.saml.websso.WebSSOProfileOptions;
 import org.springframework.security.web.DefaultSecurityFilterChain;
-import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import javax.servlet.Filter;
 import java.util.ArrayList;
@@ -339,7 +338,7 @@ public class SAMLAutoConfiguration {
 
     @Bean
     public SAMLEntryPoint samlEntryPoint() {
-        SAMLEntryPoint entry = new SAMLDefaultEntryPoint(samlUrl("**"));
+        SAMLEntryPoint entry = new SAMLDefaultEntryPoint(new AntPathRequestMatcher("/saml/**"));
         entry.setFilterProcessesUrl("/saml/login");
         entry.setDefaultProfileOptions(defaultWebSSOProfileOptions());
         return entry;
@@ -354,20 +353,22 @@ public class SAMLAutoConfiguration {
     }
 
     @Bean
-    public FilterChainProxy samlFilterChain() {
+    public SAMLFilter samlFilterChain() {
         List<SecurityFilterChain> chains = new ArrayList<>();
-        chains.add(new DefaultSecurityFilterChain(samlUrl("login/**"), samlEntryPoint()));
-        chains.add(new DefaultSecurityFilterChain(samlUrl("logout/**"), samlLogoutFilter()));
-        chains.add(new DefaultSecurityFilterChain(samlUrl("metadata/**"), samlMetadataDisplayFilter()));
-        chains.add(new DefaultSecurityFilterChain(samlUrl("SSO/**"), samlWebSSOProcessingFilter()));
-        chains.add(new DefaultSecurityFilterChain(samlUrl("SSOHoK/**"), samlWebSSOHoKProcessingFilter()));
-        chains.add(new DefaultSecurityFilterChain(samlUrl("SingleLogout/**"), samlLogoutProcessingFilter()));
-        chains.add(new DefaultSecurityFilterChain(samlUrl("discovery/**"), samlDiscovery()));
-        return new FilterChainProxy(chains);
+        chains.add(buildFilterChain("/**", samlMetadataGeneratorFilter()));
+        chains.add(buildFilterChain("/saml/login/**", samlEntryPoint()));
+        chains.add(buildFilterChain("/saml/logout/**", samlLogoutFilter()));
+        chains.add(buildFilterChain("/saml/metadata/**", samlMetadataDisplayFilter()));
+        chains.add(buildFilterChain("/saml/SSO/**", samlWebSSOProcessingFilter()));
+        chains.add(buildFilterChain("/saml/SSOHoK/**", samlWebSSOHoKProcessingFilter()));
+        chains.add(buildFilterChain("/saml/SingleLogout/**", samlLogoutProcessingFilter()));
+        chains.add(buildFilterChain("/saml/discovery/**", samlDiscovery()));
+        return new SAMLFilter(chains);
     }
 
-    private RequestMatcher samlUrl(String url) {
-        return new AntPathRequestMatcher("/saml/" + url);
+    private SecurityFilterChain buildFilterChain(String url, Filter filter) {
+        AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
+        return new DefaultSecurityFilterChain(matcher, filter);
     }
 
     @Bean
@@ -486,7 +487,8 @@ public class SAMLAutoConfiguration {
         return new SAMLConfigListener(samlProperties());
     }
 
-    // Disable default filter registrations, filters are included in SAML chain
+    // Disable all sub-filters, these are included in the global SAML filter chain
+    // This filter chains has guaranteed correct ordering
 
     @Bean
     public FilterRegistrationBean samlEntryPointRegistration(SAMLEntryPoint filter) {
