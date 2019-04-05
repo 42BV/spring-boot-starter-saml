@@ -12,25 +12,25 @@ import java.util.Map;
 
 public final class KeyManagers {
 
-  private static final KeyManager EMPTY = new EmptyKeyManager();
+  public static final KeyManager EMPTY = new EmptyKeyManager();
+
+  private static final DefaultResourceLoader RESOURCES = new DefaultResourceLoader();
 
   private KeyManagers() {
   }
 
   public static KeyManager build(KeystoreProperties properties) {
     String fileName = properties.getFileName();
-
     if (StringUtils.isBlank(fileName)) {
       return EMPTY;
-    } else {
-      return buildJks(properties);
     }
+    return buildJks(properties);
   }
 
   private static KeyManager buildJks(KeystoreProperties properties) {
-    Resource storeFile = new DefaultResourceLoader().getResource(properties.getFileName());
+    Resource resource = RESOURCES.getResource(properties.getFileName());
     Map<String, String> passwords = Collections.singletonMap(properties.getUser(), properties.getPassword());
-    return new JKSKeyManager(storeFile, properties.getPassword(), passwords, properties.getKey());
+    return new JKSKeyManager(resource, properties.getPassword(), passwords, properties.getKey());
   }
 
 }

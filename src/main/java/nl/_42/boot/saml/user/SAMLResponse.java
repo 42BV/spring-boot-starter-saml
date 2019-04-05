@@ -1,6 +1,7 @@
 package nl._42.boot.saml.user;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.opensaml.saml2.core.Attribute;
 import org.opensaml.xml.XMLObject;
@@ -16,6 +17,7 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public class SAMLResponse {
 
+    @Getter
     private final SAMLCredential credential;
 
     public SAMLAttribute getAttribute(String name) {

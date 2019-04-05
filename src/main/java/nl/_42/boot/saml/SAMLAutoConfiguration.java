@@ -2,14 +2,13 @@ package nl._42.boot.saml;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl._42.boot.saml.http.SAMLController;
 import nl._42.boot.saml.http.SAMLDefaultEntryPoint;
 import nl._42.boot.saml.http.SAMLFailureHandler;
 import nl._42.boot.saml.http.SAMLSuccessHandler;
 import nl._42.boot.saml.key.KeyManagers;
 import nl._42.boot.saml.key.KeystoreProperties;
-import nl._42.boot.saml.user.DefaultSAMLUserDetailsService;
-import nl._42.boot.saml.user.SAMLUserMapper;
+import nl._42.boot.saml.user.RoleMapper;
+import nl._42.boot.saml.user.SAMLUserService;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.velocity.app.VelocityEngine;
@@ -22,6 +21,8 @@ import org.opensaml.xml.security.BasicSecurityConfiguration;
 import org.opensaml.xml.signature.SignatureConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
@@ -49,7 +50,6 @@ import org.springframework.security.saml.metadata.ExtendedMetadataDelegate;
 import org.springframework.security.saml.metadata.MetadataDisplayFilter;
 import org.springframework.security.saml.metadata.MetadataGenerator;
 import org.springframework.security.saml.metadata.MetadataGeneratorFilter;
-import org.springframework.security.saml.metadata.MetadataManager;
 import org.springframework.security.saml.parser.ParserPoolHolder;
 import org.springframework.security.saml.processor.HTTPArtifactBinding;
 import org.springframework.security.saml.processor.HTTPPAOS11Binding;
@@ -83,33 +83,35 @@ import javax.servlet.Filter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import java.util.Timer;
 
 /**
  * Enable SAML configuration.
  */
 @Configuration
-public class SAMLConfiguration {
+@ConditionalOnProperty(name = "saml.enabled", havingValue = "true", matchIfMissing = true)
+public class SAMLAutoConfiguration {
 
     private static final String DEFAULT_SIGNATURE_ALGORITH_URI = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;
-    private static final int    DEFAULT_SESSION_TIMOUT = 21600;
+    private static final int    DEFAULT_SESSION_TIMEOUT = 21600;
+    private static final String DEFAULT_ROLE_PREFIX = "ROLE_";
 
     private static final String IDP_URL = "saml.idp_url";
     private static final String METADATA_URL = "saml.metadata_url";
     private static final String LOGOUT_URL = "saml.logout_url";
-    private static final String SERVICE_PROVIDER_ID = "saml.sp_id";
+    private static final String SP_ID = "saml.sp_id";
+    private static final String SP_BASE_URL = "saml.sp_base_url";
     private static final String RSA_SIGNATURE_ALGORITHM_URI = "saml.rsa_signature_algorithm_uri";
     private static final String MAX_AUTHENTICATION_AGE = "saml.max_authentication_age";
     private static final String FORCE_AUTH_N = "saml.force_auth_n";
     private static final String METADATA_TRUST_CHECK = "saml.metadata_trust_check";
     private static final String RESPONSE_CHECK = "saml.in_response_check";
 
-    private static final String USER_ID_NAME = "saml.user_id_name";
-    private static final String DISPLAY_NAME = "saml.display_name";
-    private static final String ORGANISATION_NAME = "saml.organisation_name";
-    private static final String AUTHORIZED_ORGANISATIONS = "saml.authorized_organisations";
-    private static final String ROLE_NAME = "saml.role_name";
-    private static final String AUTHORIZED_ROLES = "saml.authorized_roles";
+    private static final String USER_ATTRIBUTE = "saml.attributes.user";
+    private static final String ROLE_ATTIBUTE = "saml.attributes.role";
+    private static final String ROLE_PREFIX= "saml.role_prefix";
+    private static final String ROLES = "saml.roles";
 
     private static final String REMOVE_COOKIES = "saml.remove_all_cookies_upon_authentication_failure";
     private static final String FORCE_PRINCIPAL = "saml.force_principal";
@@ -127,28 +129,19 @@ public class SAMLConfiguration {
     @Autowired
     private Environment environment;
 
-    @Autowired(required = false)
-    private SAMLUserMapper samlUserMapper;
-
     // Configuration
 
     @Bean
     public SAMLProperties samlProperties() {
         SAMLProperties properties = new SAMLProperties();
 
-        // Required
         properties.setIdpUrl(environment.getRequiredProperty(IDP_URL));
         properties.setMetaDataUrl(environment.getRequiredProperty(METADATA_URL));
         properties.setLogoutUrl(environment.getRequiredProperty(LOGOUT_URL));
-        properties.setServiceProviderId(environment.getRequiredProperty(SERVICE_PROVIDER_ID));
-        properties.setUserIdName(environment.getRequiredProperty(USER_ID_NAME));
-
-        // Optional
-        properties.setDisplayName(environment.getProperty(DISPLAY_NAME));
-        properties.setOrganisationName(environment.getProperty(ORGANISATION_NAME, properties.getServiceProviderId()));
-        properties.setAuthorizedOrganisations(environment.getProperty(AUTHORIZED_ORGANISATIONS));
-        properties.setRoleName(environment.getProperty(ROLE_NAME));
-        properties.setAuthorizedRoles(environment.getProperty(AUTHORIZED_ROLES));
+        properties.setServiceProviderId(environment.getRequiredProperty(SP_ID));
+        properties.setServiceProviderBaseUrl(environment.getProperty(SP_BASE_URL));
+        properties.setUserAttribute(environment.getRequiredProperty(USER_ATTRIBUTE));
+        properties.setRoleAttribute(environment.getRequiredProperty(ROLE_ATTIBUTE));
 
         properties.setRsaSignatureAlgorithmUri(environment.getProperty(RSA_SIGNATURE_ALGORITHM_URI, DEFAULT_SIGNATURE_ALGORITH_URI));
         properties.setMaxAuthenticationAge(environment.getProperty(MAX_AUTHENTICATION_AGE, Integer.class, 9999));
@@ -185,7 +178,19 @@ public class SAMLConfiguration {
 
     @Bean
     public SAMLUserDetailsService samlUserDetailService() {
-        return new DefaultSAMLUserDetailsService(samlProperties(), samlUserMapper);
+        return new SAMLUserService(samlProperties(), samlRoleMapper());
+    }
+
+    @Bean
+    public RoleMapper samlRoleMapper() {
+        String prefix = environment.getProperty(ROLE_PREFIX, DEFAULT_ROLE_PREFIX);
+        return new RoleMapper(prefix, samlRoles());
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = ROLES)
+    public Properties samlRoles() {
+        return new Properties();
     }
 
     // HTTP filters
@@ -199,6 +204,7 @@ public class SAMLConfiguration {
     public MetadataGenerator metadataGenerator() {
         SAMLMetadataGenerator generator = new SAMLMetadataGenerator();
         generator.setEntityId(samlProperties().getServiceProviderId());
+        generator.setEntityBaseURL(samlProperties().getServiceProviderBaseUrl());
         generator.setSamlDiscovery(samlDiscovery());
         generator.setKeyManager(keyManager());
 
@@ -390,7 +396,7 @@ public class SAMLConfiguration {
     @Bean
     public SAMLSuccessHandler successRedirectHandler() {
         SAMLSuccessHandler handler = new SAMLSuccessHandler();
-        handler.setTimeout(environment.getProperty(SESSION_TIMEOUT_KEY, int.class, DEFAULT_SESSION_TIMOUT));
+        handler.setTimeout(environment.getProperty(SESSION_TIMEOUT_KEY, int.class, DEFAULT_SESSION_TIMEOUT));
         handler.setTargetUrl(environment.getRequiredProperty(SUCCESS_URL_KEY));
         return handler;
     }
@@ -521,11 +527,6 @@ public class SAMLConfiguration {
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;
-    }
-
-    @Bean
-    public SAMLController samlController(MetadataManager metadataManager) {
-        return new SAMLController(samlProperties(), metadataManager);
     }
 
     @Slf4j

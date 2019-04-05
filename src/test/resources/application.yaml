@@ -1,0 +1,21 @@
+saml:
+  attributes:
+    user: urn:oid:user
+    role: urn:oid:role
+  expired_url: /#/expired
+  forbidden_url: /#/forbidden
+  force_auth_n: true
+  idp_url: https://saml-service/sso
+  keystore:
+    file_name: classpath:simple-saml.jks
+    key: apollo
+    password: nalle123
+    user: apollo
+  logout_url: /#/gone
+  metadata_url: https://saml-service/metadata
+  roles:
+    medewerker: USER
+    externe: USER
+    admin: ADMIN
+  sp_id: urn:nl:vu:uas:local:sp
+  success_url: /#/dashboard

@@ -5,6 +5,8 @@ package nl._42.boot.saml;
 
 import lombok.Data;
 
+import java.util.Properties;
+
 /**
  * SAML properties.
  *
@@ -22,17 +24,11 @@ public class SAMLProperties {
 
     private String serviceProviderId;
 
-    private String organisationName;
+    private String serviceProviderBaseUrl;
 
-    private String authorizedOrganisations;
+    private String userAttribute;
 
-    private String userIdName;
-
-    private String displayName;
-
-    private String roleName;
-
-    private String authorizedRoles;
+    private String roleAttribute;
 
     private String rsaSignatureAlgorithmUri;
 
@@ -45,5 +41,7 @@ public class SAMLProperties {
     // Verify the session is similar, fails during http to https redirect
     // https://docs.spring.io/autorepo/docs/spring-security-saml/1.0.x/reference/html/chapter-troubleshooting.html#d5e1935
     private boolean inResponseCheck;
+
+
 
 }
