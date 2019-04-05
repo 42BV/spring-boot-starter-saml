@@ -28,16 +28,26 @@ public class SAMLFilter extends GenericFilterBean {
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-    log.trace("Started SAML filter");
-
     HttpServletRequest httpServletRequest = (HttpServletRequest) request;
     List<Filter> filters = getFilters(httpServletRequest);
+
+    if (filters.isEmpty()) {
+      // Not a SAML request, continue on regular chain
+      chain.doFilter(request, response);
+    } else {
+      // Detected SAML request, invoke internal handlers
+      handle(request, response, filters, chain);
+    }
+  }
+
+  private void handle(ServletRequest request, ServletResponse response, List<Filter> filters, FilterChain chain) throws IOException, ServletException {
+    log.trace("Started SAML filter");
+
     for (Filter filter : filters) {
-      filter.doFilter(request, response, (req, res) -> {});
+      filter.doFilter(request, response, chain);
     }
 
     log.trace("Ended SAML filter");
-    chain.doFilter(request, response);
   }
 
   private List<Filter> getFilters(HttpServletRequest request) {
