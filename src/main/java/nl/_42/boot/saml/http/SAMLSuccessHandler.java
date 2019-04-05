@@ -50,15 +50,19 @@ public class SAMLSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     private void configureSession(HttpSession session, Authentication authentication) {
-        if (timeout > 0) {
-            session.setMaxInactiveInterval(timeout);
-        } else if (authentication instanceof ExpiringUsernameAuthenticationToken) {
+        int seconds = getSecondsToExpiration(authentication);
+        session.setMaxInactiveInterval(seconds);
+    }
+
+    private int getSecondsToExpiration(Authentication authentication) {
+        int seconds = timeout;
+        if (authentication instanceof ExpiringUsernameAuthenticationToken) {
             Date expirationDate = ((ExpiringUsernameAuthenticationToken) authentication).getTokenExpiration();
             if (expirationDate != null) {
-                int secondsToExpiration = getSecondsToExpiration(expirationDate);
-                session.setMaxInactiveInterval(Math.max(secondsToExpiration, 1));
+                seconds = getSecondsToExpiration(expirationDate);
             }
         }
+        return Math.max(seconds, 0);
     }
 
     private int getSecondsToExpiration(Date expirationDate) {

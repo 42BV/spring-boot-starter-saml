@@ -46,16 +46,26 @@ public class SAMLDefaultEntryPoint extends SAMLEntryPoint {
     private String baseUrl = "";
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException e) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+        configureSession(request);
+        super.commence(request, response, exception);
+    }
+
+    private void configureSession(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        String successUrl = getSuccessUrl(request);
+        session.setAttribute(SUCCESS_URL_SESSION_KEY, successUrl);
+    }
+
+    private String getSuccessUrl(HttpServletRequest request) {
         String successUrl = request.getParameter(parameterName);
         if (StringUtils.isNotBlank(successUrl)) {
-            HttpSession session = request.getSession();
-            session.setAttribute(SUCCESS_URL_SESSION_KEY, baseUrl + decode(successUrl));
+            return baseUrl + decode(successUrl);
+        } else {
+            return null;
         }
-        super.commence(request, response, e);
     }
     
-    // Double encoded from frontend
     private static String decode(String url) {
         try {
             String result = new URLCodec().decode(url);
