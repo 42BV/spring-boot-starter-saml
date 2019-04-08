@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -15,7 +14,7 @@ public class RoleMapper {
     private final String prefix;
     private final Properties roles;
 
-    public List<SimpleGrantedAuthority> getAuthorities(Collection<String> roles) {
+    public Collection<SimpleGrantedAuthority> getAuthorities(Collection<String> roles) {
         return roles.stream()
                     .map(this::getRole)
                     .filter(StringUtils::isNotBlank)

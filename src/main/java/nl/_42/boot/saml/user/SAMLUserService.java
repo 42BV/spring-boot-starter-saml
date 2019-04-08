@@ -12,9 +12,9 @@ import org.springframework.security.saml.SAMLCredential;
 import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -50,28 +50,25 @@ public class SAMLUserService implements SAMLUserDetailsService {
      */
     @Override
     public User loadUserBySAML(SAMLCredential credential) throws UsernameNotFoundException {
-        SAMLResponse response = new SAMLResponse(credential);
+        SAMLResponse response = new DefaultSAMLResponse(credential);
         return load(response);
     }
 
     private User load(SAMLResponse response) {
         log.debug("Loading user by SAML credentials...");
-        response.getAttributes().forEach(attr ->
-          log.trace("Attribute: {} = '{}'", attr.getName(), attr.stream().collect(Collectors.joining(", ")))
-        );
 
         User user = buildUser(response);
         return decorate(user, response);
     }
 
     private User buildUser(SAMLResponse response) {
-        String userName = response.getAttribute(userAttribute).getValue().orElse("");
+        String userName = response.getValue(userAttribute).orElse("");
         if (StringUtils.isBlank(userName)) {
             throw new IllegalStateException(format("User identifier is required, missing attribute '%s'", userAttribute));
         }
 
-        List<String> roles = response.getAttribute(roleAttribute).getValues();
-        List<SimpleGrantedAuthority> authorities = mapper.getAuthorities(roles);
+        Collection<String> roles = response.getValues(roleAttribute);
+        Collection<SimpleGrantedAuthority> authorities = mapper.getAuthorities(roles);
         if (authorities.isEmpty()) {
             throw new UserNotAllowedException("User has no authorized roles");
         }
