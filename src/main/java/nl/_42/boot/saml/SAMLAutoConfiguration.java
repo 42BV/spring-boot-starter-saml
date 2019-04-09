@@ -87,7 +87,7 @@ import java.util.Timer;
  * Enable SAML configuration.
  */
 @Configuration
-@ConditionalOnProperty(name = "saml.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "saml.enabled", havingValue = "true")
 public class SAMLAutoConfiguration {
 
     private static final String DEFAULT_SIGNATURE_ALGORITH_URI = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;

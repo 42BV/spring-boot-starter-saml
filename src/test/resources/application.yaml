@@ -2,6 +2,7 @@ saml:
   attributes:
     user: urn:oid:user
     role: urn:oid:role
+  enabled: true
   expired_url: /#/expired
   forbidden_url: /#/forbidden
   force_auth_n: true
