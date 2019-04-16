@@ -15,7 +15,7 @@ import org.opensaml.xml.XMLObject;
 import org.opensaml.xml.schema.impl.XSStringImpl;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.saml.SAMLCredential;
 
 import java.util.Collections;
@@ -61,7 +61,7 @@ public class SAMLUserServiceTest {
         when(credential.getAttribute("user").getAttributeValues()).thenReturn(toXmlObjects("henkid"));
         when(credential.getAttribute("role").getAttributeValues()).thenReturn(toXmlObjects("medewerker", "unknown"));
 
-        User user = service.loadUserBySAML(credential);
+        UserDetails user = service.loadUserBySAML(credential);
         Assert.assertEquals("henkid", user.getUsername());
         Assert.assertEquals(Collections.singleton(authority), user.getAuthorities());
     }

@@ -1,9 +1,9 @@
 package nl._42.boot.saml.user;
 
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
 public interface SAMLUserDecorator {
 
-    User decorate(User user, SAMLResponse response);
+    UserDetails decorate(UserDetails details, SAMLResponse response);
 
 }

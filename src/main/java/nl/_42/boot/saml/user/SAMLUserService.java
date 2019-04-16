@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.saml.SAMLCredential;
 import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
@@ -49,19 +50,19 @@ public class SAMLUserService implements SAMLUserDetailsService {
      * {@inheritDoc}
      */
     @Override
-    public User loadUserBySAML(SAMLCredential credential) throws UsernameNotFoundException {
+    public UserDetails loadUserBySAML(SAMLCredential credential) throws UsernameNotFoundException {
         SAMLResponse response = new DefaultSAMLResponse(credential);
         return load(response);
     }
 
-    private User load(SAMLResponse response) {
+    private UserDetails load(SAMLResponse response) {
         log.debug("Loading user by SAML credentials...");
 
-        User user = buildUser(response);
-        return decorate(user, response);
+        UserDetails details = buildUser(response);
+        return decorate(details, response);
     }
 
-    private User buildUser(SAMLResponse response) {
+    private UserDetails buildUser(SAMLResponse response) {
         String userName = response.getValue(userAttribute).orElse("");
         if (StringUtils.isBlank(userName)) {
             throw new IllegalStateException(format("User identifier is required, missing attribute '%s'", userAttribute));
@@ -76,11 +77,11 @@ public class SAMLUserService implements SAMLUserDetailsService {
         return new User(userName, "", authorities);
     }
 
-    private User decorate(User user, SAMLResponse response) {
+    private UserDetails decorate(UserDetails details, SAMLResponse response) {
         for (SAMLUserDecorator decorator : decorators) {
-            user = decorator.decorate(user, response);
+            details = decorator.decorate(details, response);
         }
-        return user;
+        return details;
     }
 
     @Autowired(required = false)
