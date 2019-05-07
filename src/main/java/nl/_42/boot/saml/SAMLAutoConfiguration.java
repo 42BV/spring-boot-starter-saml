@@ -6,6 +6,7 @@ import nl._42.boot.saml.http.SAMLDefaultEntryPoint;
 import nl._42.boot.saml.http.SAMLFailureHandler;
 import nl._42.boot.saml.http.SAMLFilter;
 import nl._42.boot.saml.http.SAMLSuccessHandler;
+import nl._42.boot.saml.http.SAMLWebSSOProfile;
 import nl._42.boot.saml.key.KeyManagers;
 import nl._42.boot.saml.key.KeystoreProperties;
 import nl._42.boot.saml.user.RoleMapper;
@@ -99,6 +100,7 @@ public class SAMLAutoConfiguration {
     private static final String LOGOUT_URL = "saml.logout_url";
     private static final String SP_ID = "saml.sp_id";
     private static final String SP_BASE_URL = "saml.sp_base_url";
+    private static final String SP_STRIP_WWW = "saml.sp_strip_www";
     private static final String RSA_SIGNATURE_ALGORITHM_URI = "saml.rsa_signature_algorithm_uri";
     private static final String MAX_AUTHENTICATION_AGE = "saml.max_authentication_age";
     private static final String FORCE_AUTH_N = "saml.force_auth_n";
@@ -293,7 +295,8 @@ public class SAMLAutoConfiguration {
 
     @Bean
     public WebSSOProfile webSSOprofile() throws Exception {
-        WebSSOProfileImpl webSSOProfileImpl = new WebSSOProfileImpl(processor(), metadata());
+        SAMLWebSSOProfile webSSOProfileImpl = new SAMLWebSSOProfile(processor(), metadata());
+        webSSOProfileImpl.setStripWww(environment.getProperty(SP_STRIP_WWW, boolean.class, false));
         webSSOProfileImpl.afterPropertiesSet();
         return webSSOProfileImpl;
     }
