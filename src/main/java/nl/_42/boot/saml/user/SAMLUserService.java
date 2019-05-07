@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -37,6 +38,8 @@ public class SAMLUserService implements SAMLUserDetailsService {
     private final String userAttribute;
     private final String roleAttribute;
 
+    private final boolean roleRequired;
+
     public SAMLUserService(SAMLProperties properties, RoleMapper mapper) {
         Objects.requireNonNull(properties, "Role mapper is required");
         this.mapper = mapper;
@@ -44,6 +47,8 @@ public class SAMLUserService implements SAMLUserDetailsService {
         Objects.requireNonNull(properties, "Properties are required");
         this.userAttribute = properties.getUserAttribute();
         this.roleAttribute = properties.getRoleAttribute();
+
+        this.roleRequired = properties.isRoleRequired();
     }
 
     /**
@@ -70,8 +75,10 @@ public class SAMLUserService implements SAMLUserDetailsService {
 
         Collection<String> roles = response.getValues(roleAttribute);
         Collection<SimpleGrantedAuthority> authorities = mapper.getAuthorities(roles);
-        if (authorities.isEmpty()) {
-            throw new UserNotAllowedException("User has no authorized roles");
+        if (authorities.isEmpty() && roleRequired) {
+            throw new UserNotAllowedException(
+              "User has no authorized roles, found: " + roles.stream().collect(Collectors.joining(","))
+            );
         }
 
         return new User(userName, "", authorities);

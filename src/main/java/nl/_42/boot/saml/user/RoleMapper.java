@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class RoleMapper {
 
-    private final String prefix;
     private final Properties roles;
 
     public Collection<SimpleGrantedAuthority> getAuthorities(Collection<String> roles) {
@@ -25,11 +24,7 @@ public class RoleMapper {
     }
 
     public String getRole(String value) {
-        String name = roles.getProperty(value);
-        if (StringUtils.isNotBlank(name)) {
-            name = prefix + name;
-        }
-        return name;
+        return roles.getProperty(value);
     }
 
 }

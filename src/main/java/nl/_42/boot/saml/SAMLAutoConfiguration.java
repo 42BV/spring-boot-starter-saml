@@ -70,7 +70,6 @@ import org.springframework.security.saml.websso.WebSSOProfileConsumer;
 import org.springframework.security.saml.websso.WebSSOProfileConsumerHoKImpl;
 import org.springframework.security.saml.websso.WebSSOProfileConsumerImpl;
 import org.springframework.security.saml.websso.WebSSOProfileECPImpl;
-import org.springframework.security.saml.websso.WebSSOProfileImpl;
 import org.springframework.security.saml.websso.WebSSOProfileOptions;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -87,13 +86,13 @@ import java.util.Timer;
 /**
  * Enable SAML configuration.
  */
+@Slf4j
 @Configuration
 @ConditionalOnProperty(name = "saml.enabled", havingValue = "true")
 public class SAMLAutoConfiguration {
 
-    private static final String DEFAULT_SIGNATURE_ALGORITH_URI = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;
-    private static final int    DEFAULT_SESSION_TIMEOUT = 21600;
-    private static final String DEFAULT_ROLE_PREFIX = "ROLE_";
+    private static final String DEFAULT_SIGNATURE_ALGO_URI = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;
+    private static final int    DEFAULT_SESSION_TIMEOUT    = 21600;
 
     private static final String IDP_URL = "saml.idp_url";
     private static final String METADATA_URL = "saml.metadata_url";
@@ -109,7 +108,7 @@ public class SAMLAutoConfiguration {
 
     private static final String USER_ATTRIBUTE = "saml.attributes.user";
     private static final String ROLE_ATTIBUTE = "saml.attributes.role";
-    private static final String ROLE_PREFIX= "saml.role_prefix";
+    private static final String ROLE_REQUIRED = "saml.role_required";
     private static final String ROLES = "saml.roles";
 
     private static final String REMOVE_COOKIES = "saml.remove_all_cookies_upon_authentication_failure";
@@ -142,11 +141,12 @@ public class SAMLAutoConfiguration {
         properties.setUserAttribute(environment.getRequiredProperty(USER_ATTRIBUTE));
         properties.setRoleAttribute(environment.getRequiredProperty(ROLE_ATTIBUTE));
 
-        properties.setRsaSignatureAlgorithmUri(environment.getProperty(RSA_SIGNATURE_ALGORITHM_URI, DEFAULT_SIGNATURE_ALGORITH_URI));
+        properties.setRsaSignatureAlgorithmUri(environment.getProperty(RSA_SIGNATURE_ALGORITHM_URI, DEFAULT_SIGNATURE_ALGO_URI));
         properties.setMaxAuthenticationAge(environment.getProperty(MAX_AUTHENTICATION_AGE, Integer.class, 9999));
         properties.setForceAuthN(environment.getProperty(FORCE_AUTH_N, Boolean.class, false));
         properties.setMetaDataTrustCheck(environment.getProperty(METADATA_TRUST_CHECK, Boolean.class, false));
         properties.setInResponseCheck(environment.getProperty(RESPONSE_CHECK, Boolean.class, false));
+        properties.setRoleRequired(environment.getProperty(ROLE_REQUIRED, Boolean.class, true));
 
         return properties;
     }
@@ -182,8 +182,16 @@ public class SAMLAutoConfiguration {
 
     @Bean
     public RoleMapper samlRoleMapper() {
-        String prefix = environment.getProperty(ROLE_PREFIX, DEFAULT_ROLE_PREFIX);
-        return new RoleMapper(prefix, samlRoles());
+        Properties roles = samlRoles();
+
+        if (!roles.isEmpty()) {
+            log.info("Found 'saml.roles' in spring boot application properties.");
+            roles.forEach((role, authority) -> log.info("\t {}: {}", role, authority));
+        } else {
+            log.warn("No 'saml.roles' found in spring boot application properties, no conversion of Crowd Groups will be applied!");
+        }
+
+        return new RoleMapper(roles);
     }
 
     @Bean

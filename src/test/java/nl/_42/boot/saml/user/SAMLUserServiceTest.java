@@ -48,10 +48,10 @@ public class SAMLUserServiceTest {
         properties.setRoleAttribute("role");
 
         roles = new Properties();
-        roles.put("medewerker", "USER");
+        roles.put("medewerker", "ROLE_USER");
 
         credential = mock(SAMLCredential.class, RETURNS_DEEP_STUBS);
-        service = new SAMLUserService(properties, new RoleMapper("ROLE_", roles));
+        service = new SAMLUserService(properties, new RoleMapper(roles));
     }
 
     @Test

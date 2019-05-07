@@ -5,8 +5,6 @@ package nl._42.boot.saml;
 
 import lombok.Data;
 
-import java.util.Properties;
-
 /**
  * SAML properties.
  *
@@ -42,6 +40,6 @@ public class SAMLProperties {
     // https://docs.spring.io/autorepo/docs/spring-security-saml/1.0.x/reference/html/chapter-troubleshooting.html#d5e1935
     private boolean inResponseCheck;
 
-
+    private boolean roleRequired = true;
 
 }
