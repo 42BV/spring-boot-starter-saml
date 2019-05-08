@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.providers.ExpiringUsernameAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.RememberMeServices;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,7 +25,9 @@ import java.util.Date;
  * @author Jeroen van Schagen
  * @since Apr 21, 2015
  */
-public class SAMLSuccessHandler implements AuthenticationSuccessHandler {
+public class SAMLRedirectSuccessHandler implements AuthenticationSuccessHandler {
+
+    private final RememberMeServices rememberMeServices;
 
     @Setter
     private String targetUrl = "/";
@@ -32,11 +35,19 @@ public class SAMLSuccessHandler implements AuthenticationSuccessHandler {
     @Setter
     private int timeout;
 
+    public SAMLRedirectSuccessHandler(RememberMeServices rememberMeServices) {
+        this.rememberMeServices = rememberMeServices;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        if (rememberMeServices != null) {
+            rememberMeServices.loginSuccess(request, response, authentication);
+        }
+
         HttpSession session = request.getSession();
         configureSession(session, authentication);
         

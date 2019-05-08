@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import nl._42.boot.saml.http.SAMLDefaultEntryPoint;
 import nl._42.boot.saml.http.SAMLFailureHandler;
 import nl._42.boot.saml.http.SAMLFilter;
-import nl._42.boot.saml.http.SAMLSuccessHandler;
+import nl._42.boot.saml.http.SAMLRedirectSuccessHandler;
 import nl._42.boot.saml.http.SAMLWebSSOProfile;
 import nl._42.boot.saml.key.KeyManagers;
 import nl._42.boot.saml.key.KeystoreProperties;
@@ -71,6 +71,7 @@ import org.springframework.security.saml.websso.WebSSOProfileConsumerHoKImpl;
 import org.springframework.security.saml.websso.WebSSOProfileConsumerImpl;
 import org.springframework.security.saml.websso.WebSSOProfileECPImpl;
 import org.springframework.security.saml.websso.WebSSOProfileOptions;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
@@ -126,6 +127,9 @@ public class SAMLAutoConfiguration {
 
     @Autowired
     private Environment environment;
+
+    @Autowired(required = false)
+    private RememberMeServices rememberMeServices;
 
     // Configuration
 
@@ -398,8 +402,8 @@ public class SAMLAutoConfiguration {
     }
 
     @Bean
-    public SAMLSuccessHandler successRedirectHandler() {
-        SAMLSuccessHandler handler = new SAMLSuccessHandler();
+    public SAMLRedirectSuccessHandler successRedirectHandler() {
+        SAMLRedirectSuccessHandler handler = new SAMLRedirectSuccessHandler(rememberMeServices);
         handler.setTimeout(environment.getProperty(SESSION_TIMEOUT_KEY, int.class, DEFAULT_SESSION_TIMEOUT));
         handler.setTargetUrl(environment.getRequiredProperty(SUCCESS_URL_KEY));
         return handler;
