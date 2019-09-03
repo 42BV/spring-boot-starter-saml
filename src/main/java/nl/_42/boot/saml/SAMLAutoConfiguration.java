@@ -139,12 +139,12 @@ public class SAMLAutoConfiguration {
 
         properties.setIdpUrl(environment.getRequiredProperty(IDP_URL));
         properties.setMetaDataUrl(environment.getRequiredProperty(METADATA_URL));
-        properties.setLogoutUrl(environment.getRequiredProperty(LOGOUT_URL));
         properties.setServiceProviderId(environment.getRequiredProperty(SP_ID));
         properties.setServiceProviderBaseUrl(environment.getProperty(SP_BASE_URL));
         properties.setUserAttribute(environment.getRequiredProperty(USER_ATTRIBUTE));
         properties.setRoleAttribute(environment.getRequiredProperty(ROLE_ATTIBUTE));
 
+        properties.setLogoutUrl(environment.getProperty(LOGOUT_URL, "/"));
         properties.setRsaSignatureAlgorithmUri(environment.getProperty(RSA_SIGNATURE_ALGORITHM_URI, DEFAULT_SIGNATURE_ALGO_URI));
         properties.setMaxAuthenticationAge(environment.getProperty(MAX_AUTHENTICATION_AGE, Integer.class, 9999));
         properties.setForceAuthN(environment.getProperty(FORCE_AUTH_N, Boolean.class, false));
