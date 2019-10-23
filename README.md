@@ -1,6 +1,6 @@
 # Spring Boot Starter SAML
 
-Library for integrating SAML (ADFS) authentication with Spring Boot / Security.
+Library for integrating SAML authentication with Spring Boot and Security.
 
 ## Usage
 
