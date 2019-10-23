@@ -15,7 +15,7 @@
     <packaging>jar</packaging>
 
     <name>Spring Boot Starter SAML</name>
-    <description>Spring Boot Security integration for SAML (ADFS).</description>
+    <description>Spring Boot Security integration for SAML</description>
     <url>http://www.42.nl</url>
     <inceptionYear>2019</inceptionYear>
 

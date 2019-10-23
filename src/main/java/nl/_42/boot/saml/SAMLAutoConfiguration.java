@@ -7,7 +7,6 @@ import nl._42.boot.saml.http.SAMLFailureHandler;
 import nl._42.boot.saml.http.SAMLFilter;
 import nl._42.boot.saml.http.SAMLRedirectSuccessHandler;
 import nl._42.boot.saml.http.SAMLWebSSOProfile;
-import nl._42.boot.saml.key.KeyManagers;
 import nl._42.boot.saml.key.KeystoreProperties;
 import nl._42.boot.saml.user.RoleMapper;
 import nl._42.boot.saml.user.SAMLUserService;
@@ -120,11 +119,6 @@ public class SAMLAutoConfiguration {
     private static final String FORBIDDEN_URL_KEY = "saml.forbidden_url";
     private static final String EXPIRED_URL_KEY = "saml.expired_url";
 
-    private static final String KEYSTORE_FILENAME = "saml.keystore.file_name";
-    private static final String KEYSTORE_USERNAME = "saml.keystore.user";
-    private static final String KEYSTORE_PASSWORD = "saml.keystore.password";
-    private static final String KEYSTORE_KEY = "saml.keystore.key";
-
     @Autowired
     private Environment environment;
 
@@ -152,16 +146,6 @@ public class SAMLAutoConfiguration {
         properties.setInResponseCheck(environment.getProperty(RESPONSE_CHECK, Boolean.class, false));
         properties.setRoleRequired(environment.getProperty(ROLE_REQUIRED, Boolean.class, true));
 
-        return properties;
-    }
-
-    @Bean
-    public KeystoreProperties keystoreProperties() {
-        KeystoreProperties properties = new KeystoreProperties();
-        properties.setFileName(environment.getProperty(KEYSTORE_FILENAME));
-        properties.setUser(environment.getProperty(KEYSTORE_USERNAME));
-        properties.setPassword(environment.getProperty(KEYSTORE_PASSWORD));
-        properties.setKey(environment.getProperty(KEYSTORE_KEY));
         return properties;
     }
 
@@ -336,7 +320,7 @@ public class SAMLAutoConfiguration {
     }
 
     @Bean
-    public SingleLogoutProfile logoutprofile() throws Exception {
+    public SingleLogoutProfile logoutProfile() throws Exception {
         SingleLogoutProfileImpl singleLogoutProfileImpl = new SingleLogoutProfileImpl();
         singleLogoutProfileImpl.setMetadata(metadata());
         singleLogoutProfileImpl.setProcessor(processor());
@@ -345,8 +329,14 @@ public class SAMLAutoConfiguration {
     }
 
     @Bean
+    public KeystoreProperties keystoreProperties() {
+        return KeystoreProperties.of(environment);
+    }
+
+    @Bean
     public KeyManager keyManager() {
-        return KeyManagers.build(keystoreProperties());
+        KeystoreProperties properties = keystoreProperties();
+        return properties.getKeyManager();
     }
 
     @Bean
