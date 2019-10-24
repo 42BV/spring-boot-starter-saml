@@ -70,18 +70,25 @@ public class SAMLUserService implements SAMLUserDetailsService {
     private UserDetails buildUser(SAMLResponse response) {
         String userName = response.getValue(userAttribute).orElse("");
         if (StringUtils.isBlank(userName)) {
-            throw new IllegalStateException(format("User identifier is required, missing attribute '%s'", userAttribute));
-        }
-
-        Collection<String> roles = response.getValues(roleAttribute);
-        Collection<SimpleGrantedAuthority> authorities = mapper.getAuthorities(roles);
-        if (authorities.isEmpty() && roleRequired) {
             throw new UserNotAllowedException(
-              "User has no authorized roles, found: " + roles.stream().collect(Collectors.joining(","))
+                format("User identifier is required, missing attribute '%s'", userAttribute)
             );
         }
 
+        Collection<SimpleGrantedAuthority> authorities = getAuthorities(response);
         return new User(userName, "", authorities);
+    }
+
+    private Collection<SimpleGrantedAuthority> getAuthorities(SAMLResponse response) {
+        Collection<String> roles = response.getValues(roleAttribute);
+        Collection<SimpleGrantedAuthority> authorities = mapper.getAuthorities(roles);
+
+        if (authorities.isEmpty() && roleRequired) {
+            String granted = roles.stream().collect(Collectors.joining(","));
+            throw new UserNotAllowedException("User has no authorized roles, found: " + granted);
+        }
+
+        return authorities;
     }
 
     private UserDetails decorate(UserDetails details, SAMLResponse response) {

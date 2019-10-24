@@ -5,8 +5,8 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.opensaml.saml2.core.Attribute;
 import org.opensaml.xml.XMLObject;
-import org.opensaml.xml.schema.impl.XSAnyImpl;
-import org.opensaml.xml.schema.impl.XSStringImpl;
+import org.opensaml.xml.schema.XSAny;
+import org.opensaml.xml.schema.XSString;
 import org.springframework.security.saml.SAMLCredential;
 
 import java.util.Collections;
@@ -28,6 +28,7 @@ public class DefaultSAMLResponse implements SAMLResponse {
 
         return attribute.getAttributeValues().stream()
                         .map(this::getValueAsString)
+                        .filter(StringUtils::isNotBlank)
                         .collect(Collectors.toSet());
     }
 
@@ -40,12 +41,13 @@ public class DefaultSAMLResponse implements SAMLResponse {
     }
 
     private String getValueAsString(XMLObject object) {
-        if (object instanceof XSStringImpl) {
-            return ((XSStringImpl) object).getValue();
-        } else if (object instanceof XSAnyImpl) {
-            return ((XSAnyImpl) object).getTextContent();
+        String value = null;
+        if (object instanceof XSString) {
+            value = ((XSString) object).getValue();
+        } else if (object instanceof XSAny) {
+            value = ((XSAny) object).getTextContent();
         }
-        return null;
+        return value;
     }
 
 }

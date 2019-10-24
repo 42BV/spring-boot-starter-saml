@@ -66,14 +66,14 @@ public class SAMLUserServiceTest {
         Assert.assertEquals(Collections.singleton(authority), user.getAuthorities());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = UserNotAllowedException.class)
     public void fail_missingUserId() {
         Mockito.when(credential.getAttribute(Mockito.anyString())).thenReturn(null);
 
         service.loadUserBySAML(credential);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = UserNotAllowedException.class)
     public void fail_missingUserValue() {
         when(credential.getAttribute(Mockito.anyString()).getAttributeValues()).thenReturn(toXmlObjects());
 
