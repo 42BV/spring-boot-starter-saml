@@ -46,7 +46,7 @@
         <jdk.version>1.8</jdk.version>
 
         <!-- Dependencies -->
-        <spring.boot.version>2.1.4.RELEASE</spring.boot.version>
+        <spring.boot.version>2.2.0.RELEASE</spring.boot.version>
         <spring.security.saml.version>1.0.9.RELEASE</spring.security.saml.version>
     </properties>
 
@@ -84,6 +84,11 @@
             <groupId>org.springframework.security.extensions</groupId>
             <artifactId>spring-security-saml2-core</artifactId>
             <version>${spring.security.saml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.2</version>
         </dependency>
 
         <dependency>
@@ -174,6 +179,19 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>5.2.2</version>
+                <configuration>
+                    <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+                    <skipProvidedScope>true</skipProvidedScope>
+                    <skipTestScope>true</skipTestScope>
+                    <skipRuntimeScope>true</skipRuntimeScope>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                </configuration>
             </plugin>
         </plugins>
     </build>
