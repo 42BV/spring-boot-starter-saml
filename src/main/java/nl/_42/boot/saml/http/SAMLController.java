@@ -1,7 +1,7 @@
 package nl._42.boot.saml.http;
 
+import lombok.AllArgsConstructor;
 import nl._42.boot.saml.SAMLProperties;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.saml.metadata.MetadataManager;
 import org.springframework.stereotype.Controller;
@@ -13,18 +13,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 
 @Controller
+@AllArgsConstructor
 @RequestMapping("/saml")
 public class SAMLController {
 
     private final SAMLProperties properties;
-    
     private final MetadataManager metadata;
-
-    @Autowired
-    public SAMLController(SAMLProperties properties, MetadataManager metadata) {
-        this.properties = properties;
-        this.metadata = metadata;
-    }
 
     @GetMapping("/idpSelection")
     public String idpSelection(HttpServletRequest request, Model model, Principal principal) {

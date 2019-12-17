@@ -2,6 +2,8 @@ package nl._42.boot.saml;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nl._42.boot.saml.config.SAMLConfigController;
+import nl._42.boot.saml.http.SAMLController;
 import nl._42.boot.saml.http.SAMLDefaultEntryPoint;
 import nl._42.boot.saml.http.SAMLFailureHandler;
 import nl._42.boot.saml.http.SAMLFilter;
@@ -27,6 +29,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.env.Environment;
@@ -88,6 +91,9 @@ import java.util.Timer;
  */
 @Slf4j
 @Configuration
+@ComponentScan(basePackageClasses = {
+    SAMLController.class, SAMLConfigController.class
+})
 @ConditionalOnProperty(name = "saml.enabled", havingValue = "true")
 public class SAMLAutoConfiguration {
 
