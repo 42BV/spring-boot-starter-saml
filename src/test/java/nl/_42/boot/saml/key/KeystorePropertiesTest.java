@@ -1,6 +1,7 @@
 package nl._42.boot.saml.key;
 
 import nl._42.boot.saml.AbstractApplicationTest;
+import nl._42.boot.saml.SAMLProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,30 +16,32 @@ import static org.junit.Assert.assertNotNull;
 public class KeystorePropertiesTest extends AbstractApplicationTest {
 
     @Autowired
-    private KeystoreProperties base;
+    private SAMLProperties context;
 
-    private KeystoreProperties properties;
+    private KeystoreProperties original;
+    private KeystoreProperties current;
 
     @Before
     public void setUp() {
-        properties = new KeystoreProperties();
+        original = context.getKeystore();
+        current = new KeystoreProperties();
     }
 
     @Test
     public void empty() {
-        KeyManager keyManager = properties.getKeyManager();
+        KeyManager keyManager = current.getKeyManager();
         assertEquals(KeystoreProperties.EMPTY, keyManager);
     }
 
     @Test
     public void file() {
-        properties.setFileName(base.getFileName());
-        properties.setKey(base.getKey());
-        properties.setUser(base.getUser());
-        properties.setPassword(base.getPassword());
+        current.setFileName(original.getFileName());
+        current.setKey(original.getKey());
+        current.setUser(original.getUser());
+        current.setPassword(original.getPassword());
 
-        PublicKey original = getPublicKey(base);
-        PublicKey created = getPublicKey(properties);
+        PublicKey original = getPublicKey(this.original);
+        PublicKey created = getPublicKey(current);
 
         assertNotNull(created);
         assertEquals(original, created);
@@ -46,13 +49,13 @@ public class KeystorePropertiesTest extends AbstractApplicationTest {
 
     @Test
     public void base64() {
-        properties.setBase64(base.getBase64());
-        properties.setKey(base.getKey());
-        properties.setUser(base.getUser());
-        properties.setPassword(base.getPassword());
+        current.setBase64(original.getBase64());
+        current.setKey(original.getKey());
+        current.setUser(original.getUser());
+        current.setPassword(original.getPassword());
 
-        PublicKey original = getPublicKey(base);
-        PublicKey created = getPublicKey(properties);
+        PublicKey original = getPublicKey(this.original);
+        PublicKey created = getPublicKey(current);
 
         assertNotNull(created);
         assertEquals(original, created);
@@ -60,7 +63,7 @@ public class KeystorePropertiesTest extends AbstractApplicationTest {
 
     private PublicKey getPublicKey(KeystoreProperties properties) {
         JKSKeyManager keyManager = (JKSKeyManager) properties.getKeyManager();
-        return keyManager.getPublicKey(base.getKey());
+        return keyManager.getPublicKey(original.getKey());
     }
 
 }

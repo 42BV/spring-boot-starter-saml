@@ -31,24 +31,26 @@ import static java.lang.String.format;
 @Slf4j
 public class SAMLUserService implements SAMLUserDetailsService {
 
-    private final RoleMapper mapper;
+    private static final String USER_NAME = "user";
+    private static final String ROLE_NAME = "role";
 
-    private List<SAMLUserDecorator> decorators = new ArrayList<>();
+    private final RoleMapper mapper;
 
     private final String userAttribute;
     private final String roleAttribute;
 
     private final boolean roleRequired;
 
-    public SAMLUserService(SAMLProperties properties, RoleMapper mapper) {
-        Objects.requireNonNull(properties, "Role mapper is required");
-        this.mapper = mapper;
+    private List<SAMLUserDecorator> decorators = new ArrayList<>();
 
+    public SAMLUserService(SAMLProperties properties) {
         Objects.requireNonNull(properties, "Properties are required");
-        this.userAttribute = properties.getUserAttribute();
-        this.roleAttribute = properties.getRoleAttribute();
 
+        this.mapper = properties.getRoleMapper();
         this.roleRequired = properties.isRoleRequired();
+
+        this.userAttribute = properties.getAttribute(USER_NAME, true);
+        this.roleAttribute = properties.getAttribute(ROLE_NAME, roleRequired);
     }
 
     /**
@@ -83,12 +85,16 @@ public class SAMLUserService implements SAMLUserDetailsService {
         Collection<String> roles = response.getValues(roleAttribute);
         Collection<SimpleGrantedAuthority> authorities = mapper.getAuthorities(roles);
 
-        if (authorities.isEmpty() && roleRequired) {
+        if (isAllowed(authorities)) {
             String granted = roles.stream().collect(Collectors.joining(","));
             throw new UserNotAllowedException("User has no authorized roles, found: " + granted);
         }
 
         return authorities;
+    }
+
+    private boolean isAllowed(Collection<SimpleGrantedAuthority> authorities) {
+        return roleRequired && authorities.isEmpty();
     }
 
     private UserDetails decorate(UserDetails details, SAMLResponse response) {

@@ -1,10 +1,11 @@
 /*
  * (C) 2014 42 bv (www.42.nl). All rights reserved.
  */
-package nl._42.boot.saml.http;
+package nl._42.boot.saml.web;
 
-import lombok.Setter;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nl._42.boot.saml.SAMLProperties;
 import nl._42.boot.saml.UserNotAllowedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
@@ -17,30 +18,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-/**
- * 
- *
- * @author Jeroen van Schagen
- * @since Apr 28, 2015
- */
 @Slf4j
+@AllArgsConstructor
 public class SAMLFailureHandler implements AuthenticationFailureHandler {
 
-    @Setter
-    private String forbiddenUrl;
-    
-    @Setter
-    private String expiredUrl;
-
-    @Setter
-    private boolean removeAllCookiesUponAuthenticationFailure;
+    private final SAMLProperties properties;
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) {
-        String location = forbiddenUrl;
+        String location = properties.getForbiddenUrl();
 
         if (exception instanceof UserNotAllowedException) {
             log.warn("Attempted to login with unauthorized role...", exception);
@@ -49,11 +38,11 @@ public class SAMLFailureHandler implements AuthenticationFailureHandler {
             request.getSession().invalidate();
             SecurityContextHolder.getContext().setAuthentication(null);
 
-            if (removeAllCookiesUponAuthenticationFailure) {
+            if (properties.isRemoveAllCookiesUponAuthenticationFailure()) {
                 removeAllCookies(request, response);
             }
 
-            location = expiredUrl;
+            location = properties.getExpiredUrl();
         }
 
         redirectTo(response, location);

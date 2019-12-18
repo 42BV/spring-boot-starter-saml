@@ -1,9 +1,10 @@
 /*
  * (C) 2014 42 bv (www.42.nl). All rights reserved.
  */
-package nl._42.boot.saml.http;
+package nl._42.boot.saml.web;
 
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import nl._42.boot.saml.SAMLProperties;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -25,19 +26,11 @@ import java.util.Date;
  * @author Jeroen van Schagen
  * @since Apr 21, 2015
  */
-public class SAMLRedirectSuccessHandler implements AuthenticationSuccessHandler {
+@AllArgsConstructor
+public class SAMLSuccessRedirectHandler implements AuthenticationSuccessHandler {
 
+    private final SAMLProperties properties;
     private final RememberMeServices rememberMeServices;
-
-    @Setter
-    private String targetUrl = "/";
-
-    @Setter
-    private int timeout;
-
-    public SAMLRedirectSuccessHandler(RememberMeServices rememberMeServices) {
-        this.rememberMeServices = rememberMeServices;
-    }
 
     /**
      * {@inheritDoc}
@@ -52,7 +45,7 @@ public class SAMLRedirectSuccessHandler implements AuthenticationSuccessHandler 
         configureSession(session, authentication);
         
         String successUrl = (String) session.getAttribute(SAMLDefaultEntryPoint.SUCCESS_URL_SESSION_KEY);
-        redirectTo(response, StringUtils.defaultIfBlank(successUrl, targetUrl));
+        redirectTo(response, StringUtils.defaultIfBlank(successUrl, properties.getSuccessUrl()));
     }
 
     private void redirectTo(HttpServletResponse response, String location) {
@@ -66,7 +59,7 @@ public class SAMLRedirectSuccessHandler implements AuthenticationSuccessHandler 
     }
 
     private int getSecondsToExpiration(Authentication authentication) {
-        int seconds = timeout;
+        int seconds = properties.getSessionTimeout();
         if (authentication instanceof ExpiringUsernameAuthenticationToken) {
             Date expirationDate = ((ExpiringUsernameAuthenticationToken) authentication).getTokenExpiration();
             if (expirationDate != null) {

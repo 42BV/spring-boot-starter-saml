@@ -1,4 +1,4 @@
-package nl._42.boot.saml.http;
+package nl._42.boot.saml.web;
 
 import lombok.AllArgsConstructor;
 import nl._42.boot.saml.SAMLProperties;
@@ -15,7 +15,7 @@ import java.security.Principal;
 @Controller
 @AllArgsConstructor
 @RequestMapping("/saml")
-public class SAMLController {
+public class SAMLDiscoveryController {
 
     private final SAMLProperties properties;
     private final MetadataManager metadata;

@@ -1,4 +1,4 @@
-package nl._42.boot.saml.http;
+package nl._42.boot.saml.web;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.saml.metadata.MetadataGeneratorFilter;

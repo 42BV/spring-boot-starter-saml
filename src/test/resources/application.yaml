@@ -16,8 +16,10 @@ saml:
   logout_url: /gone
   metadata_url: https://saml-service/metadata
   roles:
-    medewerker: USER
-    externe: USER
-    admin: ADMIN
+    medewerker: ROLE_USER
+    externe: ROLE_USER
+    admin: ROLE_ADMIN
+  skip_login_redirect: false
   sp_id: urn:nl:vu:uas:local:sp
+  sp_base_url: http://unit-test/api
   success_url: /dashboard

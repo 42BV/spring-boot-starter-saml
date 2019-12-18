@@ -1,4 +1,4 @@
-package nl._42.boot.saml.http;
+package nl._42.boot.saml.web;
 
 import org.opensaml.saml2.core.AuthnRequest;
 import org.opensaml.saml2.metadata.AssertionConsumerService;
