@@ -62,7 +62,7 @@ public class SAMLProperties {
      * Retrieve real service provider login URL, preventing a 302
      * redirect on the /saml/login URL on the browser.
      */
-    private boolean skipLoginRedirect = true;
+    private boolean skipLoginRedirect;
 
     /**
      * RSA signature algorithm, by default RSA SHA1.

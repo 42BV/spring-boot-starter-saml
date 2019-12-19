@@ -18,7 +18,6 @@ public class SAMLConfigControllerTest extends AbstractWebTest {
         SAMLProperties properties = new SAMLProperties();
         properties.setEnabled(true);
         properties.setSpBaseUrl("https://test/authentication/idp/sso");
-        properties.setSkipLoginRedirect(false);
 
         SAMLLoginUrlResolver resolver = new SAMLLoginUrlResolver(properties);
         initWebClient(new SAMLConfigController(resolver));

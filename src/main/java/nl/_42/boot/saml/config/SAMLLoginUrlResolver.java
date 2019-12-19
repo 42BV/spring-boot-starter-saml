@@ -1,14 +1,19 @@
 package nl._42.boot.saml.config;
 
+import lombok.extern.slf4j.Slf4j;
 import nl._42.boot.saml.SAMLProperties;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.util.Objects;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
+@Slf4j
 @Component
 class SAMLLoginUrlResolver {
 
@@ -44,7 +49,17 @@ class SAMLLoginUrlResolver {
 
     private String getLocation(String url) {
         ResponseEntity<String> entity = template.getForEntity(url, String.class);
-        return entity.getHeaders().getLocation().toString();
+
+        HttpStatus status = entity.getStatusCode();
+        if (status.is3xxRedirection()) {
+            URI location = entity.getHeaders().getLocation();
+            Objects.requireNonNull("SAML login with status " + status.value() + " (redirect) is missing the required 'Location' header");
+            url = location.toString();
+        } else {
+            log.warn("Expected HTTP status 3xx (redirect) on login, but received {}, please disable 'saml.skip_login_redirect'", status.value());
+        }
+
+        return url;
     }
 
     private class UriBuilder {
