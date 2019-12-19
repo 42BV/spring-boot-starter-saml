@@ -1,7 +1,7 @@
 /*
  * (C) 2014 42 bv (www.42.nl). All rights reserved.
  */
-package nl._42.boot.saml.http;
+package nl._42.boot.saml.web;
 
 import lombok.Setter;
 import org.apache.commons.codec.DecoderException;

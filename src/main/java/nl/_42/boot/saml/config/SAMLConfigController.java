@@ -6,17 +6,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.Map;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/saml/config")
 public class SAMLConfigController {
 
-    private final SAMLConfigResolver resolver;
+    private final SAMLLoginUrlResolver resolver;
 
     @GetMapping
-    public SAMLConfig getConfig(HttpServletRequest request) {
-        return resolver.getConfig(request);
+    public Map<String, String> getConfig(HttpServletRequest request) {
+        String loginUrl = resolver.getLoginUrl(request);
+        return Collections.singletonMap("loginUrl", loginUrl);
     }
 
 }

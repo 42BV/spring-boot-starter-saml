@@ -1,7 +1,7 @@
 /*
  * (C) 2014 42 bv (www.42.nl). All rights reserved.
  */
-package nl._42.boot.saml.http;
+package nl._42.boot.saml.web;
 
 import nl._42.boot.saml.AbstractWebTest;
 import nl._42.boot.saml.SAMLProperties;
@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 
 import static org.mockito.Mockito.when;
 
-public class SAMLControllerTest extends AbstractWebTest {
+public class SAMLDiscoveryControllerTest extends AbstractWebTest {
 
     @Mock
     private SAMLProperties properties;
@@ -28,7 +28,7 @@ public class SAMLControllerTest extends AbstractWebTest {
 
     @Before
     public void setUp() {
-        initWebClient(new SAMLController(properties, metadata));
+        initWebClient(new SAMLDiscoveryController(properties, metadata));
     }
 
     @Test
