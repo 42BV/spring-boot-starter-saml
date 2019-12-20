@@ -161,20 +161,6 @@ public class SAMLProperties {
     }
 
     /**
-     * Retrieve the attribute name.
-     * @param name the type of attribute
-     * @param required if required, when empty and required we throw an exception
-     * @return the attribute
-     */
-    public String getAttribute(String name, boolean required) {
-        String value = attributes.getProperty(name);
-        if (required) {
-            throwIfBlank(value, "attributes." + name);
-        }
-        return value;
-    }
-
-    /**
      * Validate that a certain property is defined.
      * @param value the current value
      * @param path the relative property path
