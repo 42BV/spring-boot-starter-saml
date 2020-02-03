@@ -8,6 +8,7 @@ import nl._42.boot.saml.web.SAMLDefaultEntryPoint;
 import nl._42.boot.saml.web.SAMLDiscoveryController;
 import nl._42.boot.saml.web.SAMLFailureHandler;
 import nl._42.boot.saml.web.SAMLFilter;
+import nl._42.boot.saml.web.SAMLMetadataDisplayFilter;
 import nl._42.boot.saml.web.SAMLMetadataGenerator;
 import nl._42.boot.saml.web.SAMLSuccessRedirectHandler;
 import nl._42.boot.saml.web.SAMLWebSSOProfile;
@@ -302,8 +303,8 @@ public class SAMLAutoConfiguration {
         }
 
         @Bean
-        public MetadataDisplayFilter samlMetadataDisplayFilter() {
-            return new MetadataDisplayFilter();
+        public SAMLMetadataDisplayFilter samlMetadataDisplayFilter() {
+            return new SAMLMetadataDisplayFilter(properties.getSpId());
         }
 
         @Bean
