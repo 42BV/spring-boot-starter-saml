@@ -33,7 +33,7 @@ public class SAMLMetadataDisplayFilter extends MetadataDisplayFilter {
   @Override
   protected void processMetadataDisplay(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     super.processMetadataDisplay(request, response);
-    response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + this.fileName + "\"");
+    response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + this.fileName + "\"");
   }
 
 }
