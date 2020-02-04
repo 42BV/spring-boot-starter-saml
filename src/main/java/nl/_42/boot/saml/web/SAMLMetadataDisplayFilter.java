@@ -11,9 +11,9 @@ import java.io.IOException;
 
 public class SAMLMetadataDisplayFilter extends MetadataDisplayFilter {
 
-  private static final String DEFAULT_FILE = "spring_saml";
-  private static final String SUFFIX = "metadata.xml";
-  private static final String SEPARATOR = "_";
+  private static final String DEFAULT_FILE = "spring_saml_metadata";
+  private static final String SUFFIX = ".xml";
+  private static final String SEPARATOR = "-";
 
   private final String fileName;
 
@@ -23,11 +23,11 @@ public class SAMLMetadataDisplayFilter extends MetadataDisplayFilter {
 
   static String getMetadataFileName(String provider) {
     String fileName = DEFAULT_FILE;
-    String plainName = StringUtils.substringAfter(provider, "://");
+    String plainName = StringUtils.substringBetween(provider, "://", "/");
     if (StringUtils.isNotBlank(plainName)) {
       fileName = plainName.replaceAll("\\.", SEPARATOR).replaceAll("/", SEPARATOR);
     }
-    return fileName + SEPARATOR + SUFFIX;
+    return fileName + SUFFIX;
   }
 
   @Override
