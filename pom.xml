@@ -11,7 +11,7 @@
 
     <groupId>nl.42</groupId>
     <artifactId>spring-boot-starter-saml</artifactId>
-    <version>1.2.7-SNAPSHOT</version>
+    <version>1.2.7</version>
     <packaging>jar</packaging>
 
     <name>Spring Boot Starter SAML</name>
