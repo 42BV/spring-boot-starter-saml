@@ -15,11 +15,10 @@ import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static java.lang.String.format;
 
 /**
  * SAML implementation of retrieving the user details. Reads the user identifier 
@@ -35,8 +34,8 @@ public class SAMLUserService implements SAMLUserDetailsService {
     private static final String USER_NAME = "user";
     private static final String ROLE_NAME = "role";
 
-    private final String userAttribute;
-    private final String roleAttribute;
+    private final Map<String, String> attributes;
+    private final Assertions assertions;
 
     private final RoleMapper roleMapper;
     private final boolean roleRequired;
@@ -46,8 +45,10 @@ public class SAMLUserService implements SAMLUserDetailsService {
     public SAMLUserService(SAMLProperties properties) {
         Objects.requireNonNull(properties, "Properties are required");
 
-        this.userAttribute = properties.getAttributes().getProperty(USER_NAME, "");
-        this.roleAttribute = properties.getAttributes().getProperty(ROLE_NAME, ROLE_NAME);
+        this.attributes = properties.getAttributes();
+        this.assertions = new Assertions(
+            properties.getAssertions()
+        );
 
         this.roleMapper = properties.getRoleMapper();
         this.roleRequired = properties.isRoleRequired();
@@ -69,11 +70,19 @@ public class SAMLUserService implements SAMLUserDetailsService {
 
         String userName = getUserName(credential, response);
         Collection<GrantedAuthority> authorities = getAuthorities(response);
+
+        assertions.verify((name) -> {
+            String attribute = attributes.getOrDefault(name, name);
+            return response.getValues(attribute);
+        });
+
         return new User(userName, "", authorities);
     }
 
     private String getUserName(SAMLCredential credential, SAMLResponse response) {
-        String userName = response.getValue(userAttribute).orElse("");
+        String attribute = attributes.getOrDefault(USER_NAME, "");
+
+        String userName = response.getValue(attribute).orElse("");
         if (StringUtils.isBlank(userName)) {
             userName = Optional.ofNullable(credential.getNameID()).map(NameID::getValue).orElse("");
         }
@@ -88,7 +97,9 @@ public class SAMLUserService implements SAMLUserDetailsService {
     }
 
     private Collection<GrantedAuthority> getAuthorities(SAMLResponse response) {
-        Collection<String> roles = response.getValues(roleAttribute);
+        String attribute = attributes.getOrDefault(ROLE_NAME, ROLE_NAME);
+
+        Collection<String> roles = response.getValues(attribute);
         Collection<GrantedAuthority> authorities = roleMapper.getAuthorities(roles);
 
         if (isAllowed(authorities)) {

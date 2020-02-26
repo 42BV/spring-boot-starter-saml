@@ -44,6 +44,7 @@ public class SAMLUserServiceTest extends AbstractApplicationTest {
 
         when(credential.getAttribute("urn:oid:user").getAttributeValues()).thenReturn(toXmlObjects("henkid"));
         when(credential.getAttribute("urn:oid:role").getAttributeValues()).thenReturn(toXmlObjects("medewerker", "unknown"));
+        when(credential.getAttribute("urn:oid:organisation").getAttributeValues()).thenReturn(toXmlObjects("vorsen.nl"));
 
         UserDetails user = service.loadUserBySAML(credential);
 
@@ -53,7 +54,7 @@ public class SAMLUserServiceTest extends AbstractApplicationTest {
 
     @Test(expected = UserNotAllowedException.class)
     public void fail_missingUserId() {
-        Mockito.when(credential.getAttribute(Mockito.anyString())).thenReturn(null);
+        when(credential.getAttribute(Mockito.anyString())).thenReturn(null);
 
         service.loadUserBySAML(credential);
     }
@@ -61,6 +62,8 @@ public class SAMLUserServiceTest extends AbstractApplicationTest {
     @Test(expected = UserNotAllowedException.class)
     public void fail_missingUserValue() {
         when(credential.getAttribute(Mockito.anyString()).getAttributeValues()).thenReturn(toXmlObjects());
+
+        when(credential.getAttribute("urn:oid:organisation").getAttributeValues()).thenReturn(toXmlObjects("vorsen.nl"));
 
         service.loadUserBySAML(credential);
     }
@@ -72,6 +75,15 @@ public class SAMLUserServiceTest extends AbstractApplicationTest {
         when(credential.getAttribute("user").getAttributeValues()).thenReturn(toXmlObjects("henkid"));
         when(credential.getAttribute("name").getAttributeValues()).thenReturn(toXmlObjects("Henk Hendirksen"));
         when(credential.getAttribute("role").getAttributeValues()).thenReturn(toXmlObjects("student"));
+
+        service.loadUserBySAML(credential);
+    }
+
+    @Test(expected = UserNotAllowedException.class)
+    public void fail_unauthorizedOrganisation() {
+        when(credential.getAttribute("urn:oid:user").getAttributeValues()).thenReturn(toXmlObjects("henkid"));
+        when(credential.getAttribute("urn:oid:role").getAttributeValues()).thenReturn(toXmlObjects("medewerker", "unknown"));
+        when(credential.getAttribute("urn:oid:organisation").getAttributeValues()).thenReturn(toXmlObjects("microsoft.com"));
 
         service.loadUserBySAML(credential);
     }

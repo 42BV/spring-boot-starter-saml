@@ -1,7 +1,10 @@
 saml:
+  assertions:
+    organisation: 'surfguest.nl|harvard-example.edu|vorsen.nl'
   attributes:
     user: urn:oid:user
     role: urn:oid:role
+    organisation: urn:oid:organisation
   enabled: true
   expired_url: /expired
   forbidden_url: /forbidden
