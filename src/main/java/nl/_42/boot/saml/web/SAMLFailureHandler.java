@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl._42.boot.saml.SAMLProperties;
 import nl._42.boot.saml.UserNotAllowedException;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -29,7 +28,7 @@ public class SAMLFailureHandler implements AuthenticationFailureHandler {
      */
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) {
-        String location = properties.getForbiddenUrl();
+        String url = properties.getForbiddenUrl();
 
         if (exception instanceof UserNotAllowedException) {
             log.warn("Attempted to login with unauthorized role...", exception);
@@ -42,15 +41,10 @@ public class SAMLFailureHandler implements AuthenticationFailureHandler {
                 removeAllCookies(request, response);
             }
 
-            location = properties.getExpiredUrl();
+            url = properties.getExpiredUrl();
         }
 
-        redirectTo(response, location);
-    }
-    
-    private void redirectTo(HttpServletResponse response, String location) {
-        response.setHeader("Location", location);
-        response.setStatus(HttpStatus.SEE_OTHER.value());
+        Location.redirectTo(request, response, url);
     }
 
     private void removeAllCookies(HttpServletRequest request, HttpServletResponse response) {

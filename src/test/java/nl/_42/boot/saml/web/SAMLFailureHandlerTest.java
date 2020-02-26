@@ -7,9 +7,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import static org.junit.Assert.assertEquals;
 
 public class SAMLFailureHandlerTest extends AbstractApplicationTest {
@@ -19,13 +16,15 @@ public class SAMLFailureHandlerTest extends AbstractApplicationTest {
 
     @Test
     public void no_cookies() {
-        HttpServletRequest request = new MockHttpServletRequest();
-        HttpServletResponse response = new MockHttpServletResponse();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteHost("https://localhost");
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
 
         handler.onAuthenticationFailure(request, response, new UsernameNotFoundException("Abc"));
 
         assertEquals(
-          "/expired",
+          "https://localhost/expired",
           response.getHeader("Location")
         );
     }

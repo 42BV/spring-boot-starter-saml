@@ -6,7 +6,6 @@ package nl._42.boot.saml.web;
 import lombok.AllArgsConstructor;
 import nl._42.boot.saml.SAMLProperties;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.providers.ExpiringUsernameAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -43,14 +42,14 @@ public class SAMLSuccessRedirectHandler implements AuthenticationSuccessHandler 
 
         HttpSession session = request.getSession();
         configureSession(session, authentication);
-        
-        String successUrl = (String) session.getAttribute(SAMLDefaultEntryPoint.SUCCESS_URL_SESSION_KEY);
-        redirectTo(response, StringUtils.defaultIfBlank(successUrl, properties.getSuccessUrl()));
+
+        String successUrl = getSuccessUrl(session);
+        Location.redirectTo(request, response, successUrl);
     }
 
-    private void redirectTo(HttpServletResponse response, String location) {
-        response.setHeader("Location", location);
-        response.setStatus(HttpStatus.SEE_OTHER.value());
+    private String getSuccessUrl(HttpSession session) {
+        String successUrl = (String) session.getAttribute(SAMLDefaultEntryPoint.SUCCESS_URL_SESSION_KEY);
+        return StringUtils.defaultIfBlank(successUrl, properties.getSuccessUrl());
     }
 
     private void configureSession(HttpSession session, Authentication authentication) {
