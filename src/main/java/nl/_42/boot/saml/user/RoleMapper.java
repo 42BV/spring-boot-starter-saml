@@ -6,13 +6,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
-import java.util.Properties;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
 public class RoleMapper {
 
-    private final Properties roles;
+    private final Map<String, String> roles;
 
     public Collection<GrantedAuthority> getAuthorities(Collection<String> roles) {
         return roles.stream()
@@ -25,7 +25,7 @@ public class RoleMapper {
     }
 
     public String getRole(String value) {
-        return roles.getProperty(value);
+        return roles.get(value);
     }
 
 }

@@ -11,7 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.opensaml.xml.signature.SignatureConstants;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * SAML properties.
@@ -103,12 +104,17 @@ public class SAMLProperties {
     /**
      * Attribute mapping after successful authentication, requires a 'user'.
      */
-    private Properties attributes = new Properties();
+    private Map<String, String> attributes = new HashMap<>();
 
     /**
      * Role mapping after successful login.
      */
-    private Properties roles = new Properties();
+    private Map<String, String> roles = new HashMap<>();
+
+    /**
+     * Assertions that should be matched.
+     */
+    private Map<String, String> assertions = new HashMap<>();
 
     /**
      * Session timeout.
