@@ -152,6 +152,11 @@ public class SAMLProperties {
     private String logoutUrl = "/";
 
     /**
+     * URL aliases.
+     */
+    private Map<String, String> aliases = new HashMap<>();
+
+    /**
      * Build a new role mapper.
      * @return the role mapper
      */

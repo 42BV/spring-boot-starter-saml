@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl._42.boot.saml.config.SAMLConfigController;
 import nl._42.boot.saml.user.SAMLUserService;
+import nl._42.boot.saml.web.FriendlyURLComparator;
 import nl._42.boot.saml.web.SAMLDefaultEntryPoint;
 import nl._42.boot.saml.web.SAMLDiscoveryController;
 import nl._42.boot.saml.web.SAMLFailureHandler;
@@ -15,6 +16,8 @@ import nl._42.boot.saml.web.SAMLWebSSOProfile;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.velocity.app.VelocityEngine;
+import org.opensaml.saml2.binding.decoding.HTTPPostDecoder;
+import org.opensaml.saml2.binding.encoding.HTTPPostEncoder;
 import org.opensaml.saml2.metadata.provider.HTTPMetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProviderException;
@@ -57,6 +60,7 @@ import org.springframework.security.saml.processor.HTTPPAOS11Binding;
 import org.springframework.security.saml.processor.HTTPPostBinding;
 import org.springframework.security.saml.processor.HTTPRedirectDeflateBinding;
 import org.springframework.security.saml.processor.HTTPSOAP11Binding;
+import org.springframework.security.saml.processor.SAMLProcessor;
 import org.springframework.security.saml.processor.SAMLProcessorImpl;
 import org.springframework.security.saml.storage.EmptyStorageFactory;
 import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
@@ -372,13 +376,25 @@ public class SAMLAutoConfiguration {
         }
 
         @Bean
-        public SAMLProcessorImpl processor() throws Exception {
-            return new SAMLProcessorImpl(Arrays.asList(redirectBinding(), postBinding(), artifactBinding(), soapBinding(), paosBinding()));
+        public SAMLProcessor processor() throws Exception {
+            return new SAMLProcessorImpl(Arrays.asList(redirectBinding(), httpPostBinding(), artifactBinding(), soapBinding(), paosBinding()));
         }
 
         @Bean
-        public HTTPPostBinding postBinding() {
-            return new HTTPPostBinding(parserPool(), velocityEngine());
+        public HTTPPostBinding httpPostBinding() {
+            return new HTTPPostBinding(parserPool(), httpPostDecoder(), httpPostEncoder());
+        }
+
+        @Bean
+        public HTTPPostDecoder httpPostDecoder() {
+            HTTPPostDecoder decoder = new HTTPPostDecoder(parserPool());
+            decoder.setURIComparator(new FriendlyURLComparator(properties.getAliases()));
+            return decoder;
+        }
+
+        @Bean
+        public HTTPPostEncoder httpPostEncoder() {
+            return new HTTPPostEncoder(velocityEngine(), "/templates/saml2-post-binding.vm");
         }
 
         @Bean
