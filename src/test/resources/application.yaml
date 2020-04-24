@@ -1,4 +1,6 @@
 saml:
+  aliases:
+    localhost: saml-service
   assertions:
     organisation: 'surfguest.nl|harvard-example.edu|vorsen.nl'
   attributes:
