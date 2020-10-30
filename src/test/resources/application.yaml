@@ -20,6 +20,7 @@ saml:
     user: apollo
   logout_url: /gone
   metadata_url: https://saml-service/metadata
+  response_skew: 600
   roles:
     medewerker: ROLE_USER
     externe: ROLE_USER
