@@ -224,6 +224,7 @@ public class SAMLAutoConfiguration {
         public WebSSOProfileConsumer webSSOprofileConsumer() throws Exception {
             WebSSOProfileConsumerImpl webSSOProfileConsumerImpl = new WebSSOProfileConsumerImpl(processor(), metadata());
             webSSOProfileConsumerImpl.setMaxAuthenticationAge(properties.getMaxAuthenticationAge());
+            webSSOProfileConsumerImpl.setResponseSkew(properties.getResponseSkew());
             webSSOProfileConsumerImpl.afterPropertiesSet();
             return webSSOProfileConsumerImpl;
         }

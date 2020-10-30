@@ -25,10 +25,6 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "saml")
 public class SAMLProperties {
 
-    private static final String DEFAULT_SIGNATURE_ALGO_URI = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;
-    private static final int    DEFAULT_SESSION_TIMEOUT    = 21600;
-    private static final int    DEFAULT_MAX_AUTH_AGE       = 9999;
-
     /**
      * Enables SAML authentication filters.
      */
@@ -68,7 +64,7 @@ public class SAMLProperties {
     /**
      * RSA signature algorithm, by default RSA SHA1.
      */
-    private String rsaSignatureAlgorithmUri = DEFAULT_SIGNATURE_ALGO_URI;
+    private String rsaSignatureAlgorithmUri = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;
 
     /**
      * Keystore properties.
@@ -76,9 +72,14 @@ public class SAMLProperties {
     private KeystoreProperties keystore = new KeystoreProperties();
 
     /**
+     * Maximum time from response creation when the message is deemed valid (in seconds).
+     */
+    private int responseSkew = 60;
+
+    /**
      * Maximum authentication age.
      */
-    private int maxAuthenticationAge = DEFAULT_MAX_AUTH_AGE;
+    private int maxAuthenticationAge = 9999;
 
     /**
      * Force new authentication upon login.
@@ -119,7 +120,7 @@ public class SAMLProperties {
     /**
      * Session timeout.
      */
-    private int sessionTimeout = DEFAULT_SESSION_TIMEOUT;
+    private int sessionTimeout = 21600;
 
     /**
      * If cookies should be removed after a failed login attempt.
