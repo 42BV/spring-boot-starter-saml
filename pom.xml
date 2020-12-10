@@ -46,8 +46,8 @@
         <jdk.version>1.8</jdk.version>
 
         <!-- Dependencies -->
-        <spring.boot.version>2.2.4.RELEASE</spring.boot.version>
-        <spring.security.saml.version>1.0.9.RELEASE</spring.security.saml.version>
+        <spring.boot.version>2.3.4.RELEASE</spring.boot.version>
+        <spring.security.saml.version>1.0.10.RELEASE</spring.security.saml.version>
     </properties>
 
     <dependencyManagement>
@@ -58,6 +58,11 @@
                 <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>1.9.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

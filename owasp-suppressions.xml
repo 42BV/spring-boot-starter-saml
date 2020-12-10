@@ -7,8 +7,14 @@
 
     <suppress>
         <notes>This is all about lower versions of the springframework.</notes>
-        <filePath regex="true">.*\bspring-security-.*-5\.2\.0\.RELEASE\.jar</filePath>
+        <filePath regex="true">.*\bspring-security-.*-5\.3\.4\.RELEASE\.jar</filePath>
         <cve>CVE-2018-1258</cve>
+    </suppress>
+    <suppress>
+        <notes>This is about lower versions tomcat.</notes>
+        <filePath regex="true">.*\btomcat-embed.*-9\.0\.38\.jar</filePath>
+        <cve>CVE-2020-13943</cve>
+        <cve>CVE-2020-17527</cve>
     </suppress>
 
 </suppressions>
