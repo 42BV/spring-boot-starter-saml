@@ -3,16 +3,19 @@
  */
 package nl._42.boot.saml;
 
+import com.onelogin.saml2.model.KeyStoreSettings;
+import com.onelogin.saml2.settings.Saml2Settings;
+import com.onelogin.saml2.settings.SettingsBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import nl._42.boot.saml.key.KeystoreProperties;
 import nl._42.boot.saml.user.RoleMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.opensaml.xml.signature.SignatureConstants;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * SAML properties.
@@ -25,10 +28,17 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "saml")
 public class SAMLProperties {
 
+    private static final String PROPERTY_PREFIX = "onelogin.saml2.";
+
     /**
      * Enables SAML authentication filters.
      */
     private boolean enabled;
+
+    /**
+     * Metadata URL
+     */
+    private String idpMetadataUrl;
 
     /**
      * IDP URL
@@ -36,9 +46,9 @@ public class SAMLProperties {
     private String idpUrl;
 
     /**
-     * Metadata URL
+     * IDP certificate
      */
-    private String metadataUrl;
+    private String idpCertificate;
 
     /**
      * Service provider ID
@@ -51,20 +61,9 @@ public class SAMLProperties {
     private String spBaseUrl;
 
     /**
-     * Strip 'www' from service provider return URL.
+     * Redirect logout URL.
      */
-    private boolean spStripWww;
-
-    /**
-     * Retrieve real service provider login URL, preventing a 302
-     * redirect on the /saml/login URL on the browser.
-     */
-    private boolean skipLoginRedirect;
-
-    /**
-     * RSA signature algorithm, by default RSA SHA1.
-     */
-    private String rsaSignatureAlgorithmUri = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;
+    private String spLogoutUrl;
 
     /**
      * Keystore properties.
@@ -72,35 +71,19 @@ public class SAMLProperties {
     private KeystoreProperties keystore = new KeystoreProperties();
 
     /**
-     * Maximum time from response creation when the message is deemed valid (in seconds).
-     */
-    private int responseSkew = 60;
-
-    /**
-     * Maximum authentication age.
-     */
-    private int maxAuthenticationAge = 9999;
-
-    /**
      * Force new authentication upon login.
      */
     private boolean forceAuthN;
 
     /**
-     * Check metadata trust upon login.
-     */
-    private boolean metaDataTrustCheck;
-
-    /**
-     * Verify the session is similar, fails during http to https redirect.
-     * https://docs.spring.io/autorepo/docs/spring-security-saml/1.0.x/reference/html/chapter-troubleshooting.html#d5e1935
-     */
-    private boolean inResponseCheck;
-
-    /**
      * Deny users with no roles.
      */
-    private boolean roleRequired = true;
+    private boolean roleRequired;
+
+    /**
+     * Strict response validation.
+     */
+    private boolean strict = true;
 
     /**
      * Attribute mapping after successful authentication, requires a 'user'.
@@ -118,6 +101,11 @@ public class SAMLProperties {
     private Map<String, String> assertions = new HashMap<>();
 
     /**
+     * Custom properties that are set.
+     */
+    private Properties properties = new Properties();
+
+    /**
      * Session timeout.
      */
     private int sessionTimeout = 21600;
@@ -128,34 +116,30 @@ public class SAMLProperties {
     private boolean removeAllCookiesUponAuthenticationFailure = true;
 
     /**
-     * Force principal.
+     * Retrieve real service provider login URL, preventing a 302
+     * redirect on the /saml/login URL on the browser.
      */
-    private boolean forcePrincipal;
+    private boolean skipLoginRedirect;
 
     /**
      * Redirect success URL.
      */
-    private String successUrl = "/";
+    private String successUrl;
 
     /**
      * Redirect forbidden URL.
      */
-    private String forbiddenUrl;
+    private String forbiddenUrl = "/forbidden";
 
     /**
      * Redirect expired URL.
      */
-    private String expiredUrl;
+    private String expiredUrl = "/expired";
 
     /**
-     * Redirect logout URL.
+     * RSA signature algorithm, by default RSA SHA1.
      */
-    private String logoutUrl = "/";
-
-    /**
-     * URL aliases.
-     */
-    private Map<String, String> aliases = new HashMap<>();
+    private String rsaSignatureAlgorithmUri = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 
     /**
      * Build a new role mapper.
@@ -172,12 +156,60 @@ public class SAMLProperties {
         return new RoleMapper(roles);
     }
 
-    /**
-     * Validate that a certain property is defined.
-     * @param value the current value
-     * @param path the relative property path
-     */
-    public static void throwIfBlank(String value, String path) {
+    public Saml2Settings build() {
+        validate();
+
+        // Generate missing properties
+        KeyStoreSettings keyStoreSettings = keystore.build();
+        if (StringUtils.isBlank(idpCertificate)) {
+            idpCertificate = KeystoreProperties.getCertificate(keyStoreSettings);
+        }
+
+        SettingsBuilder builder = new SettingsBuilder();
+
+        // Add custom properties with the expected prefix
+        Properties properties = buildProperties();
+        builder.fromProperties(properties);
+
+        Map<String, Object> values = new HashMap<>();
+
+        // Service provider properties
+        values.put(SettingsBuilder.SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, spLogoutUrl);
+        values.put(SettingsBuilder.SP_ENTITYID_PROPERTY_KEY, spId);
+        values.put(SettingsBuilder.SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY, spBaseUrl);
+
+        // Identity provider properties
+        values.put(SettingsBuilder.IDP_ENTITYID_PROPERTY_KEY, idpMetadataUrl);
+        values.put(SettingsBuilder.IDP_SINGLE_SIGN_ON_SERVICE_URL_PROPERTY_KEY, idpUrl);
+        values.put(SettingsBuilder.IDP_X509CERT_PROPERTY_KEY, idpCertificate);
+
+        // Global properties
+        values.put(SettingsBuilder.SECURITY_SIGNATURE_ALGORITHM, rsaSignatureAlgorithmUri);
+
+        builder.fromValues(values, keyStoreSettings);
+
+        Saml2Settings settings = builder.build();
+        settings.setSPValidationOnly(true);
+        settings.setStrict(strict);
+        return settings;
+    }
+
+    private Properties buildProperties() {
+        Properties properties = new Properties();
+        for (String name : this.properties.stringPropertyNames()) {
+            properties.put(PROPERTY_PREFIX + name, this.properties.getProperty(name));
+        }
+        return properties;
+    }
+
+    private void validate() {
+        throwIfBlank(getIdpMetadataUrl(), "idp_metadata_url");
+        throwIfBlank(getIdpUrl(), "idp_url");
+        throwIfBlank(getSpId(), "sp_id");
+        throwIfBlank(getSpBaseUrl(), "sp_base_url");
+    }
+
+    private static void throwIfBlank(String value, String path) {
         if (StringUtils.isBlank(value)) {
             throw new IllegalStateException("Missing required SAML property 'saml." + path + ".");
         }

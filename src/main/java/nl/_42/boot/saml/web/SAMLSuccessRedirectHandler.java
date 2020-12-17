@@ -4,11 +4,12 @@
 package nl._42.boot.saml.web;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import nl._42.boot.saml.SAMLProperties;
-import org.apache.commons.lang.StringUtils;
+import nl._42.boot.saml.user.ExpiringAuthenticationToken;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.providers.ExpiringUsernameAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.RememberMeServices;
 
@@ -16,9 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Date;
 
 /**
  * Session configuring success handler.
@@ -26,8 +25,11 @@ import java.util.Date;
  * @author Jeroen van Schagen
  * @since Apr 21, 2015
  */
+@Slf4j
 @AllArgsConstructor
 public class SAMLSuccessRedirectHandler implements AuthenticationSuccessHandler {
+
+    public static final String SUCCESS_URL_NAME = "successUrl";
 
     private final SAMLProperties properties;
     private final RememberMeServices rememberMeServices;
@@ -43,9 +45,18 @@ public class SAMLSuccessRedirectHandler implements AuthenticationSuccessHandler 
 
         HttpSession session = request.getSession();
         configureSession(session, authentication);
-        
-        String successUrl = (String) session.getAttribute(SAMLDefaultEntryPoint.SUCCESS_URL_SESSION_KEY);
-        redirectTo(response, StringUtils.defaultIfBlank(successUrl, properties.getSuccessUrl()));
+
+        String successUrl = getSuccessUrl(session);
+        redirectTo(response, successUrl);
+    }
+
+    private String getSuccessUrl(HttpSession session) {
+        String successUrl = (String) session.getAttribute(SUCCESS_URL_NAME);
+        if (StringUtils.isBlank(successUrl) || successUrl.equals("/")) {
+            successUrl = properties.getSuccessUrl();
+        }
+
+        return successUrl;
     }
 
     private void redirectTo(HttpServletResponse response, String location) {
@@ -60,19 +71,18 @@ public class SAMLSuccessRedirectHandler implements AuthenticationSuccessHandler 
 
     private int getSecondsToExpiration(Authentication authentication) {
         int seconds = properties.getSessionTimeout();
-        if (authentication instanceof ExpiringUsernameAuthenticationToken) {
-            Date expirationDate = ((ExpiringUsernameAuthenticationToken) authentication).getTokenExpiration();
-            if (expirationDate != null) {
-                seconds = getSecondsToExpiration(expirationDate);
+        if (authentication instanceof ExpiringAuthenticationToken) {
+            LocalDateTime expiration = ((ExpiringAuthenticationToken) authentication).getExpiration();
+            if (expiration != null) {
+                seconds = getSecondsToExpiration(expiration);
             }
         }
         return Math.max(seconds, 0);
     }
 
-    private int getSecondsToExpiration(Date expirationDate) {
-        LocalDateTime currentTime = LocalDateTime.now();
-        LocalDateTime expirationTime = LocalDateTime.ofInstant(expirationDate.toInstant(), ZoneId.systemDefault());
-        return (int) (expirationTime.toEpochSecond(ZoneOffset.UTC) - currentTime.toEpochSecond(ZoneOffset.UTC));
+    private int getSecondsToExpiration(LocalDateTime expiration) {
+        LocalDateTime current = LocalDateTime.now();
+        return (int) (expiration.toEpochSecond(ZoneOffset.UTC) - current.toEpochSecond(ZoneOffset.UTC));
     }
 
 }

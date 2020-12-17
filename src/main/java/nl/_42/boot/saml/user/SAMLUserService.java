@@ -2,22 +2,19 @@ package nl._42.boot.saml.user;
 
 import lombok.extern.slf4j.Slf4j;
 import nl._42.boot.saml.SAMLProperties;
-import nl._42.boot.saml.UserNotAllowedException;
 import org.apache.commons.lang3.StringUtils;
-import org.opensaml.saml2.core.NameID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.saml.SAMLCredential;
-import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -29,7 +26,7 @@ import java.util.stream.Collectors;
  * @since Nov 18, 2014
  */
 @Slf4j
-public class SAMLUserService implements SAMLUserDetailsService {
+public class SAMLUserService {
 
     private static final String USER_NAME = "user";
     private static final String ROLE_NAME = "role";
@@ -54,21 +51,15 @@ public class SAMLUserService implements SAMLUserDetailsService {
         this.roleRequired = properties.isRoleRequired();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public UserDetails loadUserBySAML(SAMLCredential credential) {
-        SAMLResponse response = new DefaultSAMLResponse(credential);
-
-        UserDetails user = buildUser(credential, response);
+    public UserDetails load(SAMLResponse response) throws AuthenticationException {
+        UserDetails user = build(response);
         return decorate(user, response);
     }
 
-    private UserDetails buildUser(SAMLCredential credential, SAMLResponse response) {
+    private UserDetails build(SAMLResponse response) {
         log.debug("Loading user by SAML credentials...");
 
-        String userName = getUserName(credential, response);
+        String userName = getUserName(response);
         Collection<GrantedAuthority> authorities = getAuthorities(response);
 
         assertions.verify((name) -> {
@@ -79,13 +70,9 @@ public class SAMLUserService implements SAMLUserDetailsService {
         return new User(userName, "", authorities);
     }
 
-    private String getUserName(SAMLCredential credential, SAMLResponse response) {
+    private String getUserName(SAMLResponse response) {
         String attribute = attributes.getOrDefault(USER_NAME, "");
-
-        String userName = response.getValue(attribute).orElse("");
-        if (StringUtils.isBlank(userName)) {
-            userName = Optional.ofNullable(credential.getNameID()).map(NameID::getValue).orElse("");
-        }
+        String userName = response.getValue(attribute).orElseGet(response::getName);
 
         if (StringUtils.isBlank(userName)) {
             throw new UserNotAllowedException(
@@ -99,10 +86,10 @@ public class SAMLUserService implements SAMLUserDetailsService {
     private Collection<GrantedAuthority> getAuthorities(SAMLResponse response) {
         String attribute = attributes.getOrDefault(ROLE_NAME, ROLE_NAME);
 
-        Collection<String> roles = response.getValues(attribute);
+        Set<String> roles = response.getValues(attribute);
         Collection<GrantedAuthority> authorities = roleMapper.getAuthorities(roles);
 
-        if (isAllowed(authorities)) {
+        if (isNotAllowed(authorities)) {
             String granted = roles.stream().collect(Collectors.joining(","));
             throw new UserNotAllowedException("User has no authorized roles, found: " + granted);
         }
@@ -110,7 +97,7 @@ public class SAMLUserService implements SAMLUserDetailsService {
         return authorities;
     }
 
-    private boolean isAllowed(Collection<GrantedAuthority> authorities) {
+    private boolean isNotAllowed(Collection<GrantedAuthority> authorities) {
         return roleRequired && authorities.isEmpty();
     }
 
