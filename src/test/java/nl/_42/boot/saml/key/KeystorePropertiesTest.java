@@ -1,69 +1,46 @@
 package nl._42.boot.saml.key;
 
-import nl._42.boot.saml.AbstractApplicationTest;
-import nl._42.boot.saml.SAMLProperties;
-import org.junit.Before;
+import com.onelogin.saml2.model.KeyStoreSettings;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.saml.key.JKSKeyManager;
-import org.springframework.security.saml.key.KeyManager;
 
-import java.security.PublicKey;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+public class KeystorePropertiesTest {
 
-public class KeystorePropertiesTest extends AbstractApplicationTest {
+    @Test
+    public void build_shouldSucceed() {
+        KeystoreProperties properties = properties();
 
-    @Autowired
-    private SAMLProperties context;
-
-    private KeystoreProperties original;
-    private KeystoreProperties current;
-
-    @Before
-    public void setUp() {
-        original = context.getKeystore();
-        current = new KeystoreProperties();
+        KeyStoreSettings settings = properties.build();
+        Assert.assertNotNull(settings.getKeyStore());
+        Assert.assertEquals(properties.getKey(), settings.getSpAlias());
+        Assert.assertEquals(properties.getPassword(), settings.getSpKeyPass());
     }
 
     @Test
-    public void empty() {
-        KeyManager keyManager = current.getKeyManager();
-        assertEquals(KeystoreProperties.EMPTY, keyManager);
+    public void getCertificate_shouldSucceed() {
+        KeyStoreSettings settings = properties().build();
+
+        String certificate = KeystoreProperties.getCertificate(settings);
+        assertThat(certificate, Matchers.startsWith("MIIDU"));
+        assertThat(certificate, Matchers.endsWith("GuHE="));
     }
 
     @Test
-    public void file() {
-        current.setFileName(original.getFileName());
-        current.setKey(original.getKey());
-        current.setUser(original.getUser());
-        current.setPassword(original.getPassword());
-
-        PublicKey original = getPublicKey(this.original);
-        PublicKey created = getPublicKey(current);
-
-        assertNotNull(created);
-        assertEquals(original, created);
+    public void getCertificate_null_shouldSucceed() {
+        String certificate = KeystoreProperties.getCertificate(null);
+        Assert.assertEquals(null, certificate);
     }
 
-    @Test
-    public void base64() {
-        current.setBase64(original.getBase64());
-        current.setKey(original.getKey());
-        current.setUser(original.getUser());
-        current.setPassword(original.getPassword());
-
-        PublicKey original = getPublicKey(this.original);
-        PublicKey created = getPublicKey(current);
-
-        assertNotNull(created);
-        assertEquals(original, created);
-    }
-
-    private PublicKey getPublicKey(KeystoreProperties properties) {
-        JKSKeyManager keyManager = (JKSKeyManager) properties.getKeyManager();
-        return keyManager.getPublicKey(original.getKey());
+    private KeystoreProperties properties() {
+        KeystoreProperties properties = new KeystoreProperties();
+        properties.setKey("apollo");
+        properties.setUser("apollo");
+        properties.setPassword("nalle123");
+        properties.setFileName("classpath:simple-saml.jks");
+        return properties;
     }
 
 }

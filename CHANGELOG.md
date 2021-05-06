@@ -1,5 +1,30 @@
 # Release notes
 
+## 2.0.0 <06-05-2021>
+Migrated from the outdated `spring-saml` and `open-saml` library to `one-login`, solving various OWASP issues.
+
+- Some required properties were renamed:
+  * `saml.metadata_url` => `saml.idp_metadata_url`
+  * `saml.logout_url` => `saml.idp_logout_url`
+- Some properties are no longer supported. Please use `saml.properties.<name>` when configuration is needed:
+  * `saml.sp_strip_www`
+  * `saml.response_skew`
+  * `saml.max_authentication_age`
+  * `saml.meta_data_trust_check`
+  * `saml.in_response_check`
+  * `saml.aliases`
+- Property `saml.role_required` is now default false
+- IDP certificate can now be configured directly, removing the need for a keystore
+
+```yaml
+saml:
+  certificate: '
+    -----BEGIN CERTIFICATE-----
+    CONTENT
+    -----END CERTIFICATE-----
+  '
+```
+
 ## 1.0.5 <23-10-2019>
 - Added optional base 64 keystore option. Used when no `saml.keystore.file_name` defined.
 

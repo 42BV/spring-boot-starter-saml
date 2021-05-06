@@ -6,7 +6,7 @@ package nl._42.boot.saml.web;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl._42.boot.saml.SAMLProperties;
-import nl._42.boot.saml.UserNotAllowedException;
+import nl._42.boot.saml.user.UserNotAllowedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;

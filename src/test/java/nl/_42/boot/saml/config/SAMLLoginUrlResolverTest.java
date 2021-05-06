@@ -26,7 +26,7 @@ public class SAMLLoginUrlResolverTest extends AbstractApplicationTest {
     public void resolveWith_shouldSucceed() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         String loginUrl = resolver.getLoginUrl(request);
-        assertEquals("http://unit-test/api/saml/login", loginUrl);
+        assertEquals("https://unit-test/saml/login", loginUrl);
     }
 
     @Test
@@ -35,7 +35,7 @@ public class SAMLLoginUrlResolverTest extends AbstractApplicationTest {
         request.setParameter("successUrl", "42.nl/congrats");
 
         String loginUrl = resolver.getLoginUrl(request);
-        assertEquals("http://unit-test/api/saml/login?successUrl=42.nl/congrats", loginUrl);
+        assertEquals("https://unit-test/saml/login?successUrl=42.nl/congrats", loginUrl);
     }
 
 }

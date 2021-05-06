@@ -1,9 +1,9 @@
 package nl._42.boot.saml;
 
+import nl._42.boot.saml.user.SAMLUserService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -15,7 +15,7 @@ public class ConfigurationTest extends AbstractApplicationTest {
 
     @Test
     public void userDetailService_shouldSucceed() {
-        SAMLUserDetailsService service = applicationContext.getBean(SAMLUserDetailsService.class);
+        SAMLUserService service = applicationContext.getBean(SAMLUserService.class);
         assertNotNull(service);
     }
 
@@ -25,7 +25,7 @@ public class ConfigurationTest extends AbstractApplicationTest {
         assertNotNull(properties);
 
         // Verify properties (test/resources/application.yaml)
-        assertEquals(600, properties.getResponseSkew());
+        assertEquals(true, properties.isForceAuthN());
     }
 
 }
