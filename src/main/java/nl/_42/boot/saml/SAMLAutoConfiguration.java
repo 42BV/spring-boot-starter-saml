@@ -76,7 +76,10 @@ public class SAMLAutoConfiguration {
         }
 
         private SAMLLogoutFilter samlLogoutFilter(Saml2Settings settings) {
-            return new SAMLLogoutFilter(settings);
+            return new SAMLLogoutFilter(
+                settings,
+                properties.getSuccessUrl()
+            );
         }
 
         private SAMLProcessingFilter samlProcessingFilter(Saml2Settings settings) {
