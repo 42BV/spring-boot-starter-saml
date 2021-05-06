@@ -36,7 +36,17 @@ public class SAMLProperties {
     private boolean enabled;
 
     /**
-     * Metadata URL
+     * IDP certificate
+     */
+    private String idpCertificate;
+
+    /**
+     * IDP logout URL
+     */
+    private String idpLogoutUrl;
+
+    /**
+     * IDP metadata URL
      */
     private String idpMetadataUrl;
 
@@ -44,11 +54,6 @@ public class SAMLProperties {
      * IDP URL
      */
     private String idpUrl;
-
-    /**
-     * IDP certificate
-     */
-    private String idpCertificate;
 
     /**
      * Service provider ID
@@ -59,11 +64,6 @@ public class SAMLProperties {
      * Service provider base URL
      */
     private String spBaseUrl;
-
-    /**
-     * Redirect logout URL.
-     */
-    private String spLogoutUrl;
 
     /**
      * Keystore properties.
@@ -159,34 +159,30 @@ public class SAMLProperties {
     public Saml2Settings build() {
         validate();
 
-        // Generate missing properties
         KeyStoreSettings keyStoreSettings = keystore.build();
         if (StringUtils.isBlank(idpCertificate)) {
             idpCertificate = KeystoreProperties.getCertificate(keyStoreSettings);
         }
 
         SettingsBuilder builder = new SettingsBuilder();
-
-        // Add custom properties with the expected prefix
-        Properties properties = buildProperties();
-        builder.fromProperties(properties);
-
         Map<String, Object> values = new HashMap<>();
 
         // Service provider properties
-        values.put(SettingsBuilder.SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, spLogoutUrl);
         values.put(SettingsBuilder.SP_ENTITYID_PROPERTY_KEY, spId);
         values.put(SettingsBuilder.SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY, spBaseUrl);
 
         // Identity provider properties
         values.put(SettingsBuilder.IDP_ENTITYID_PROPERTY_KEY, idpMetadataUrl);
+        values.put(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, idpLogoutUrl);
+        values.put(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY, "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
         values.put(SettingsBuilder.IDP_SINGLE_SIGN_ON_SERVICE_URL_PROPERTY_KEY, idpUrl);
         values.put(SettingsBuilder.IDP_X509CERT_PROPERTY_KEY, idpCertificate);
 
-        // Global properties
         values.put(SettingsBuilder.SECURITY_SIGNATURE_ALGORITHM, rsaSignatureAlgorithmUri);
-
         builder.fromValues(values, keyStoreSettings);
+
+        Properties properties = buildProperties();
+        builder.fromProperties(properties);
 
         Saml2Settings settings = builder.build();
         settings.setSPValidationOnly(true);

@@ -5,12 +5,13 @@ import com.onelogin.saml2.exception.SAMLException;
 import com.onelogin.saml2.settings.Saml2Settings;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.security.cert.CertificateEncodingException;
 
 public class SAMLMetadataDisplayFilter extends AbstractSAMLFilter {
 
@@ -22,25 +23,33 @@ public class SAMLMetadataDisplayFilter extends AbstractSAMLFilter {
     private static final String PATH = "/";
 
     private final String fileName;
+    private final String url;
 
-    public SAMLMetadataDisplayFilter(Saml2Settings settings, String provider) {
+    public SAMLMetadataDisplayFilter(Saml2Settings settings, String provider, String url) {
         super(settings);
 
         this.fileName = getMetadataFileName(provider);
+        this.url = url;
     }
 
     static String getMetadataFileName(String provider) {
-        String fileName = getName(provider);
-        return StringUtils.defaultIfBlank(fileName, SPRING_SAML_METADATA) + XML;
+        String name = getName(provider);
+        return name + XML;
     }
 
     private static String getName(String provider) {
-        String name = StringUtils.substringAfter(provider, PROTOCOL);
-        if (StringUtils.isNotBlank(name)) {
-            name = StringUtils.substringBefore(name, PATH);
-            name = name.replaceAll("\\.", SEPARATOR).replaceAll("/", SEPARATOR);
+        if (StringUtils.isBlank(provider)) {
+            return SPRING_SAML_METADATA;
         }
-        return name;
+
+        String name = provider;
+        if (name.contains(PROTOCOL)) {
+            name = StringUtils.substringAfter(provider, PROTOCOL);
+        }
+        if (name.contains(PATH)) {
+            name = StringUtils.substringBefore(name, PATH);
+        }
+        return name.replaceAll("\\.", SEPARATOR).replaceAll("/", SEPARATOR);
     }
 
     @Override
@@ -48,10 +57,10 @@ public class SAMLMetadataDisplayFilter extends AbstractSAMLFilter {
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + this.fileName + "\"");
 
         try {
-            String metadata = auth.getSettings().getSPMetadata();
-            response.getWriter().append(metadata);
-        } catch (CertificateEncodingException e) {
-            throw new SAMLException("Could not retrieve metadata", e);
+            ResponseEntity<String> entity = new RestTemplate().getForEntity(url, String.class);
+            response.getWriter().append(entity.getBody());
+        } catch (RuntimeException rte) {
+            throw new SAMLException("Could not retrieve metadata", rte);
         }
     }
 

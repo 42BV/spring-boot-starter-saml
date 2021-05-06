@@ -91,7 +91,8 @@ public class SAMLAutoConfiguration {
         private SAMLMetadataDisplayFilter samlMetadataDisplayFilter(Saml2Settings settings) {
             return new SAMLMetadataDisplayFilter(
                 settings,
-                properties.getSpId()
+                properties.getSpId(),
+                properties.getIdpMetadataUrl()
             );
         }
 

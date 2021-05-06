@@ -5,7 +5,7 @@ Migrated from the outdated `spring-saml` and `open-saml` library to `one-login`,
 
 - Some required properties were renamed:
   * `saml.metadata_url` => `saml.idp_metadata_url`
-  * `saml.logout_url` => `saml.sp_logout_url`
+  * `saml.logout_url` => `saml.idp_logout_url`
 - Some properties are no longer supported. Please use `saml.properties.<name>` when configuration is needed:
   * `saml.sp_strip_www`
   * `saml.response_skew`
