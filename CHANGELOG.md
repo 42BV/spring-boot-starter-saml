@@ -1,6 +1,6 @@
 # Release notes
 
-## UNRELEASED
+## 2.0.0 <06-05-2021>
 Migrated from the outdated `spring-saml` and `open-saml` library to `one-login`, solving various OWASP issues.
 
 - Some required properties were renamed:
