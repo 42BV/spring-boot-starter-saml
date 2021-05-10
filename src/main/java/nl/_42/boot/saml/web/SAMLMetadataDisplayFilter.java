@@ -5,13 +5,12 @@ import com.onelogin.saml2.exception.SAMLException;
 import com.onelogin.saml2.settings.Saml2Settings;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.cert.CertificateEncodingException;
 
 public class SAMLMetadataDisplayFilter extends AbstractSAMLFilter {
 
@@ -57,10 +56,10 @@ public class SAMLMetadataDisplayFilter extends AbstractSAMLFilter {
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + this.fileName + "\"");
 
         try {
-            ResponseEntity<String> entity = new RestTemplate().getForEntity(url, String.class);
-            response.getWriter().append(entity.getBody());
-        } catch (RuntimeException rte) {
-            throw new SAMLException("Could not retrieve metadata", rte);
+            String metadata = auth.getSettings().getSPMetadata();
+            response.getWriter().append(metadata);
+        } catch (CertificateEncodingException e) {
+            throw new SAMLException("Could not retrieve metadata", e);
         }
     }
 
