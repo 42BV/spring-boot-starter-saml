@@ -56,6 +56,11 @@ public class SAMLProperties {
     private String idpUrl;
 
     /**
+     * IDP validate
+     */
+    private boolean idpValidate = false;
+
+    /**
      * Service provider ID
      */
     private String spId;
@@ -179,14 +184,14 @@ public class SAMLProperties {
         values.put(SettingsBuilder.IDP_X509CERT_PROPERTY_KEY, idpCertificate);
 
         values.put(SettingsBuilder.SECURITY_SIGNATURE_ALGORITHM, rsaSignatureAlgorithmUri);
+        values.put(SettingsBuilder.STRICT_PROPERTY_KEY, strict);
         builder.fromValues(values, keyStoreSettings);
 
         Properties properties = buildProperties();
         builder.fromProperties(properties);
 
         Saml2Settings settings = builder.build();
-        settings.setSPValidationOnly(true);
-        settings.setStrict(strict);
+        settings.setSPValidationOnly(!idpValidate);
         return settings;
     }
 
