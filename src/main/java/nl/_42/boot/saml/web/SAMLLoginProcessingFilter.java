@@ -18,13 +18,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
-public class SAMLProcessingFilter extends AbstractSAMLFilter {
+public class SAMLLoginProcessingFilter extends AbstractSAMLFilter {
 
     private final SAMLAuthenticationProvider authenticationProvider;
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
 
-    public SAMLProcessingFilter(
+    public SAMLLoginProcessingFilter(
         Saml2Settings settings,
         SAMLAuthenticationProvider authenticationProvider,
         AuthenticationSuccessHandler successHandler,
@@ -54,7 +54,7 @@ public class SAMLProcessingFilter extends AbstractSAMLFilter {
 
     private void handleSuccess(Auth auth, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Authentication authentication = authenticationProvider.authenticate(auth);
-        log.info("Authentication {} successful", authentication.getName());
+        log.info("Login '{}' successful", authentication.getName());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         successHandler.onAuthenticationSuccess(request, response, authentication);

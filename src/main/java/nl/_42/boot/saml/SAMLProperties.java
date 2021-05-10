@@ -68,7 +68,7 @@ public class SAMLProperties {
     /**
      * Service provider base URL
      */
-    private String spBaseUrl;
+    private String spBaseUrl = "";
 
     /**
      * Keystore properties.
@@ -174,7 +174,8 @@ public class SAMLProperties {
 
         // Service provider properties
         values.put(SettingsBuilder.SP_ENTITYID_PROPERTY_KEY, spId);
-        values.put(SettingsBuilder.SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY, spBaseUrl);
+        values.put(SettingsBuilder.SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY, buildSpUrl(SAMLAutoConfiguration.SSO_URL));
+        values.put(SettingsBuilder.SP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, buildSpUrl(SAMLAutoConfiguration.SLO_URL));
 
         // Identity provider properties
         values.put(SettingsBuilder.IDP_ENTITYID_PROPERTY_KEY, idpMetadataUrl);
@@ -214,6 +215,11 @@ public class SAMLProperties {
         if (StringUtils.isBlank(value)) {
             throw new IllegalStateException("Missing required SAML property 'saml." + path + ".");
         }
+    }
+
+    private String buildSpUrl(String path) {
+        String url = StringUtils.stripEnd(spBaseUrl, "/");
+        return url + path;
     }
 
 }

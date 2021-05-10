@@ -9,9 +9,10 @@ import nl._42.boot.saml.user.SAMLUserService;
 import nl._42.boot.saml.web.SAMLFailureHandler;
 import nl._42.boot.saml.web.SAMLFilter;
 import nl._42.boot.saml.web.SAMLLoginFilter;
+import nl._42.boot.saml.web.SAMLLoginProcessingFilter;
 import nl._42.boot.saml.web.SAMLLogoutFilter;
+import nl._42.boot.saml.web.SAMLLogoutProcessingFilter;
 import nl._42.boot.saml.web.SAMLMetadataDisplayFilter;
-import nl._42.boot.saml.web.SAMLProcessingFilter;
 import nl._42.boot.saml.web.SAMLSuccessRedirectHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -31,10 +32,11 @@ import java.util.Optional;
 @ComponentScan(basePackageClasses = SAMLConfigController.class)
 public class SAMLAutoConfiguration {
 
-    private static final String LOGIN_URL      = "/saml/login";
-    private static final String LOGOUT_URL     = "/saml/logout";
-    private static final String PROCESSING_URL = "/saml/SSO";
-    private static final String METADATA_URL   = "/saml/metadata";
+    static final String LOGIN_URL      = "/saml/login";
+    static final String LOGOUT_URL     = "/saml/logout";
+    static final String SSO_URL        = "/saml/SSO";
+    static final String SLO_URL        = "/saml/SingleLogout";
+    static final String METADATA_URL   = "/saml/metadata";
 
     @Bean
     public SAMLProperties samlProperties() {
@@ -62,33 +64,35 @@ public class SAMLAutoConfiguration {
         @Bean
         public SAMLFilter samlFilterChain(Saml2Settings settings) {
             SAMLFilter chain = new SAMLFilter();
-            chain.on(LOGIN_URL, samlLoginUrl(settings));
+            chain.on(LOGIN_URL, samlLoginFilter(settings));
             chain.on(LOGOUT_URL, samlLogoutFilter(settings));
-            chain.on(PROCESSING_URL, samlProcessingFilter(settings));
+            chain.on(SSO_URL, samlLoginProcessingFilter(settings));
+            chain.on(SLO_URL, samlLogoutProcessingFilter(settings));
             chain.on(METADATA_URL, samlMetadataDisplayFilter(settings));
             return chain;
         }
 
-        private SAMLLoginFilter samlLoginUrl(Saml2Settings settings) {
-            SAMLLoginFilter filter = new SAMLLoginFilter(settings, PROCESSING_URL);
+        private SAMLLoginFilter samlLoginFilter(Saml2Settings settings) {
+            SAMLLoginFilter filter = new SAMLLoginFilter(settings, SSO_URL);
             filter.setForceAuthn(properties.isForceAuthN());
             return filter;
         }
 
-        private SAMLLogoutFilter samlLogoutFilter(Saml2Settings settings) {
-            return new SAMLLogoutFilter(
-                settings,
-                properties.getSuccessUrl()
-            );
-        }
-
-        private SAMLProcessingFilter samlProcessingFilter(Saml2Settings settings) {
-            return new SAMLProcessingFilter(
+        private SAMLLoginProcessingFilter samlLoginProcessingFilter(Saml2Settings settings) {
+            return new SAMLLoginProcessingFilter(
                 settings,
                 samlAuthenticationProvider(),
                 samlSuccessRedirectHandler(),
                 samlFailureHandler()
             );
+        }
+
+        private SAMLLogoutFilter samlLogoutFilter(Saml2Settings settings) {
+            return new SAMLLogoutFilter(settings, SLO_URL);
+        }
+
+        private SAMLLogoutProcessingFilter samlLogoutProcessingFilter(Saml2Settings settings) {
+            return new SAMLLogoutProcessingFilter(settings, properties.getSuccessUrl());
         }
 
         private SAMLMetadataDisplayFilter samlMetadataDisplayFilter(Saml2Settings settings) {
