@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -38,6 +39,11 @@ public class SAMLResponse {
 
     public String getName() {
         return auth.getNameId();
+    }
+
+    public Collection<String> getAttributes() {
+        List<String> names = auth.getAttributesName();
+        return Collections.unmodifiableList(names);
     }
 
 }

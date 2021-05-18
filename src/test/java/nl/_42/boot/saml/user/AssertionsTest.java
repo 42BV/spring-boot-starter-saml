@@ -1,5 +1,6 @@
 package nl._42.boot.saml.user;
 
+import nl._42.boot.saml.UserNotAllowedException;
 import org.junit.Test;
 
 import java.util.Collections;

@@ -2,6 +2,7 @@ package nl._42.boot.saml.user;
 
 import lombok.extern.slf4j.Slf4j;
 import nl._42.boot.saml.SAMLProperties;
+import nl._42.boot.saml.UserNotAllowedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.AuthenticationException;

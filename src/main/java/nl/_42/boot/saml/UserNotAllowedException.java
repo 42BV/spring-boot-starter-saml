@@ -1,7 +1,7 @@
 /*
  * (C) 2014 42 bv (www.42.nl). All rights reserved.
  */
-package nl._42.boot.saml.user;
+package nl._42.boot.saml;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 

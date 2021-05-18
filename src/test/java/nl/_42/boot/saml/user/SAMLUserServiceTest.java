@@ -4,6 +4,7 @@
 package nl._42.boot.saml.user;
 
 import nl._42.boot.saml.AbstractApplicationTest;
+import nl._42.boot.saml.UserNotAllowedException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

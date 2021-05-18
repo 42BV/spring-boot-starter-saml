@@ -21,7 +21,7 @@ public class SAMLAuthenticationProvider {
         UserDetails details = userService.load(response);
         LocalDateTime expiration = convert(auth.getSessionExpiration());
 
-        return new SAMLAuthentication(details, expiration);
+        return new SAMLAuthentication(details, response, expiration);
     }
 
     private LocalDateTime convert(DateTime date) {
