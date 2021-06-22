@@ -35,6 +35,11 @@ public class SAMLFilter extends GenericFilterBean {
     on(matcher, filter);
   }
 
+  public void on(String url, Filter filter) {
+    AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
+    on(matcher, filter);
+  }
+
   public void on(RequestMatcher matcher, Filter filter) {
     filters.add(new DefaultSecurityFilterChain(matcher, filter));
   }
