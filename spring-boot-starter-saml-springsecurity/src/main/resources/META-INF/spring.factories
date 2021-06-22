@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=nl._42.boot.saml.SAMLAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=nl._42.boot.saml.springsecurity.SAMLAutoConfiguration

@@ -1,6 +1,7 @@
-package nl._42.boot.saml.user;
+package nl._42.boot.saml.springsecurity.user;
 
 import nl._42.boot.saml.UserNotAllowedException;
+import nl._42.boot.saml.user.Assertions;
 import org.junit.Test;
 
 import java.util.Collections;

@@ -3,8 +3,8 @@
  */
 package nl._42.boot.saml.onelogin.user;
 
-import nl._42.boot.saml.onelogin.AbstractApplicationTest;
 import nl._42.boot.saml.UserNotAllowedException;
+import nl._42.boot.saml.onelogin.AbstractApplicationTest;
 import nl._42.boot.saml.user.SAMLResponse;
 import org.junit.Assert;
 import org.junit.Before;
