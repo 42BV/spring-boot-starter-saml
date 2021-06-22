@@ -6,6 +6,7 @@ import nl._42.boot.saml.config.SAMLConfigController;
 import nl._42.boot.saml.key.KeystoreProperties;
 import nl._42.boot.saml.user.SAMLUserService;
 import nl._42.boot.saml.web.FriendlyURLComparator;
+import nl._42.boot.saml.web.HttpLoggingPostBinding;
 import nl._42.boot.saml.web.SAMLDefaultEntryPoint;
 import nl._42.boot.saml.web.SAMLDiscoveryController;
 import nl._42.boot.saml.web.SAMLFailureHandler;
@@ -36,6 +37,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -314,13 +316,13 @@ public class SAMLAutoConfiguration {
         @Bean
         public SAMLFilter samlFilterChain() {
             SAMLFilter chain = new SAMLFilter(samlMetadataGeneratorFilter());
-            chain.on("/saml/login/**", samlEntryPoint());
-            chain.on("/saml/logout/**", samlLogoutFilter());
-            chain.on("/saml/metadata/**", samlMetadataDisplayFilter());
-            chain.on("/saml/SSO/**", samlWebSSOProcessingFilter());
-            chain.on("/saml/SSOHoK/**", samlWebSSOHoKProcessingFilter());
-            chain.on("/saml/SingleLogout/**", samlLogoutProcessingFilter());
-            chain.on("/saml/discovery/**", samlDiscovery());
+            chain.on(HttpMethod.GET, "/saml/login/**", samlEntryPoint());
+            chain.on(HttpMethod.GET, "/saml/logout/**", samlLogoutFilter());
+            chain.on(HttpMethod.GET, "/saml/metadata/**", samlMetadataDisplayFilter());
+            chain.on(HttpMethod.POST, "/saml/SSO/**", samlWebSSOProcessingFilter());
+            chain.on(HttpMethod.POST, "/saml/SSOHoK/**", samlWebSSOHoKProcessingFilter());
+            chain.on(HttpMethod.POST, "/saml/SingleLogout/**", samlLogoutProcessingFilter());
+            chain.on(HttpMethod.POST, "/saml/discovery/**", samlDiscovery());
             return chain;
         }
 
@@ -395,12 +397,16 @@ public class SAMLAutoConfiguration {
 
         @Bean
         public SAMLProcessor processor() throws Exception {
-            return new SAMLProcessorImpl(Arrays.asList(redirectBinding(), httpPostBinding(), artifactBinding(), soapBinding(), paosBinding()));
+            return new SAMLProcessorImpl(
+                Arrays.asList(
+                    redirectBinding(), httpPostBinding(), artifactBinding(), soapBinding(), paosBinding()
+                )
+            );
         }
 
         @Bean
         public HTTPPostBinding httpPostBinding() {
-            return new HTTPPostBinding(parserPool(), httpPostDecoder(), httpPostEncoder());
+            return new HttpLoggingPostBinding(parserPool(), httpPostDecoder(), httpPostEncoder());
         }
 
         @Bean

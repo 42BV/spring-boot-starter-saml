@@ -1,10 +1,12 @@
 package nl._42.boot.saml.web;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.saml.metadata.MetadataGeneratorFilter;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.servlet.Filter;
@@ -28,8 +30,12 @@ public class SAMLFilter extends GenericFilterBean {
     this.generator = generator;
   }
 
-  public void on(String url, Filter filter) {
-    AntPathRequestMatcher matcher = new AntPathRequestMatcher(url);
+  public void on(HttpMethod method, String url, Filter filter) {
+    AntPathRequestMatcher matcher = new AntPathRequestMatcher(url, method.name());
+    on(matcher, filter);
+  }
+
+  public void on(RequestMatcher matcher, Filter filter) {
     filters.add(new DefaultSecurityFilterChain(matcher, filter));
   }
 
@@ -55,9 +61,9 @@ public class SAMLFilter extends GenericFilterBean {
 
   private Filter getFilter(HttpServletRequest request) {
     return filters.stream()
-                  .filter(filter -> filter.matches(request))
-                  .flatMap(chain -> chain.getFilters().stream())
-                  .findFirst().orElse(null);
+            .filter(filter -> filter.matches(request))
+            .flatMap(chain -> chain.getFilters().stream())
+            .findFirst().orElse(null);
   }
 
 }
