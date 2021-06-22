@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>nl.42</groupId>
+        <artifactId>spring-boot-starter-saml</artifactId>
+        <version>2.0.6-SNAPSHOT</version>
+    </parent>
+
+    <groupId>nl.42</groupId>
+    <artifactId>spring-boot-starter-saml-springsecurity</artifactId>
+    <version>2.0.6-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Spring Boot Starter SAML Spring Security</name>
+
+    <properties>
+        <spring.security.saml.version>1.0.9.RELEASE</spring.security.saml.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>nl.42</groupId>
+            <artifactId>spring-boot-starter-saml-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>1.4.01</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security.extensions</groupId>
+            <artifactId>spring-security-saml2-core</artifactId>
+            <version>${spring.security.saml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.2</version>
+        </dependency>
+    </dependencies>
+
+</project>
