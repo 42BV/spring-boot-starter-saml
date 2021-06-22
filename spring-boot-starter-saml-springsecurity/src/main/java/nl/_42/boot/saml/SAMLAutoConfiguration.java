@@ -93,6 +93,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Timer;
 
 import static nl._42.boot.saml.SAMLProperties.throwIfBlank;
@@ -120,8 +121,8 @@ public class SAMLAutoConfiguration {
         private final SAMLProperties properties;
 
         @Lazy
-        @Autowired(required = false)
-        private RememberMeServices rememberMeServices;
+        @Autowired
+        private Optional<RememberMeServices> rememberMeServices;
 
         @Autowired
         public SAMLAuthenticationConfiguration(SAMLProperties properties) {
@@ -316,13 +317,13 @@ public class SAMLAutoConfiguration {
         @Bean
         public SAMLFilter samlFilterChain() {
             SAMLFilter chain = new SAMLFilter(samlMetadataGeneratorFilter());
-            chain.on(HttpMethod.GET, "/saml/login/**", samlEntryPoint());
-            chain.on(HttpMethod.GET, "/saml/logout/**", samlLogoutFilter());
-            chain.on(HttpMethod.GET, "/saml/metadata/**", samlMetadataDisplayFilter());
+            chain.on("/saml/login/**", samlEntryPoint());
+            chain.on("/saml/logout/**", samlLogoutFilter());
+            chain.on("/saml/metadata/**", samlMetadataDisplayFilter());
             chain.on(HttpMethod.POST, "/saml/SSO/**", samlWebSSOProcessingFilter());
             chain.on(HttpMethod.POST, "/saml/SSOHoK/**", samlWebSSOHoKProcessingFilter());
-            chain.on(HttpMethod.POST, "/saml/SingleLogout/**", samlLogoutProcessingFilter());
-            chain.on(HttpMethod.POST, "/saml/discovery/**", samlDiscovery());
+            chain.on("/saml/SingleLogout/**", samlLogoutProcessingFilter());
+            chain.on("/saml/discovery/**", samlDiscovery());
             return chain;
         }
 
@@ -355,7 +356,7 @@ public class SAMLAutoConfiguration {
 
         @Bean
         public SAMLSuccessRedirectHandler successRedirectHandler() {
-            return new SAMLSuccessRedirectHandler(properties, rememberMeServices);
+            return new SAMLSuccessRedirectHandler(properties, rememberMeServices.orElse(null));
         }
 
         @Bean
