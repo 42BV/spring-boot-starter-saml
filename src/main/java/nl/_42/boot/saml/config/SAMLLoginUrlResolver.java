@@ -2,6 +2,7 @@ package nl._42.boot.saml.config;
 
 import lombok.extern.slf4j.Slf4j;
 import nl._42.boot.saml.SAMLProperties;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
@@ -30,7 +31,7 @@ class SAMLLoginUrlResolver {
     }
 
     public String getLoginUrl(HttpServletRequest request) {
-        if (!properties.isEnabled()) {
+        if (!properties.isEnabled() && StringUtils.isBlank(properties.getSpLoginUrl())) {
             return "";
         }
 
@@ -45,11 +46,19 @@ class SAMLLoginUrlResolver {
     }
 
     private String getLoginUrl(String successUrl) {
-        UriBuilder builder = new UriBuilder(properties.getSpBaseUrl()).path("/saml/login");
+        UrlBuilder builder = getLoginUrl();
         if (isNotEmpty(successUrl)) {
             builder.append("?successUrl=").append(successUrl);
         }
         return builder.build();
+    }
+
+    private UrlBuilder getLoginUrl() {
+        if (StringUtils.isNotBlank(properties.getSpLoginUrl())) {
+            return new UrlBuilder(properties.getSpLoginUrl());
+        }
+
+        return new UrlBuilder(properties.getSpBaseUrl()).path("/saml/login");
     }
 
     private String getLocation(String url) {
@@ -71,34 +80,34 @@ class SAMLLoginUrlResolver {
         return url;
     }
 
-    private class UriBuilder {
+    private class UrlBuilder {
 
-        private StringBuilder uri;
+        private StringBuilder url;
 
-        UriBuilder(String host) {
-            uri = new StringBuilder();
-            append(host);
+        UrlBuilder(String baseUrl) {
+            url = new StringBuilder();
+            append(baseUrl);
         }
 
-        UriBuilder path(String path) {
+        UrlBuilder path(String path) {
             if (!path.isEmpty() && !path.startsWith("/")) {
-                uri.append("/");
+                url.append("/");
             }
             return append(path);
         }
 
-        UriBuilder append(String value) {
+        UrlBuilder append(String value) {
             if (value.endsWith("/")) {
                 String stripped = value.substring(0, value.length() - 1);
                 return append(stripped);
             }
 
-            uri.append(value);
+            url.append(value);
             return this;
         }
 
         String build() {
-            return uri.toString();
+            return url.toString();
         }
 
     }

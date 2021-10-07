@@ -51,6 +51,11 @@ public class SAMLProperties {
     private String spBaseUrl;
 
     /**
+     * Service provider base URL
+     */
+    private String spLoginUrl;
+
+    /**
      * Strip 'www' from service provider return URL.
      */
     private boolean spStripWww;
