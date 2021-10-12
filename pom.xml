@@ -36,7 +36,7 @@
 
     <scm>
         <connection>scm:git:git://github.com/42BV/spring-boot-starter-saml.git</connection>
-        <developerConnection>scm:git:git@github.com:42BV/spring-boot-starter-saml.git</developerConnection>
+        <developerConnection>scm:git:git@github.com/42BV/spring-boot-starter-saml.git</developerConnection>
         <url>https://github.com/42BV/spring-boot-starter-saml</url>
         <tag>HEAD</tag>
     </scm>
