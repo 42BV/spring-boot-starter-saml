@@ -3,9 +3,9 @@
  */
 package nl._42.boot.saml.web;
 
-import lombok.AllArgsConstructor;
 import nl._42.boot.saml.SAMLProperties;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.providers.ExpiringUsernameAuthenticationToken;
@@ -26,11 +26,15 @@ import java.util.Date;
  * @author Jeroen van Schagen
  * @since Apr 21, 2015
  */
-@AllArgsConstructor
 public class SAMLSuccessRedirectHandler implements AuthenticationSuccessHandler {
 
     private final SAMLProperties properties;
-    private final RememberMeServices rememberMeServices;
+
+    private RememberMeServices rememberMeServices;
+
+    public SAMLSuccessRedirectHandler(SAMLProperties properties) {
+        this.properties = properties;
+    }
 
     /**
      * {@inheritDoc}
@@ -73,6 +77,11 @@ public class SAMLSuccessRedirectHandler implements AuthenticationSuccessHandler 
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime expirationTime = LocalDateTime.ofInstant(expirationDate.toInstant(), ZoneId.systemDefault());
         return (int) (expirationTime.toEpochSecond(ZoneOffset.UTC) - currentTime.toEpochSecond(ZoneOffset.UTC));
+    }
+
+    @Autowired(required = false)
+    public void setRememberMeServices(RememberMeServices rememberMeServices) {
+        this.rememberMeServices = rememberMeServices;
     }
 
 }

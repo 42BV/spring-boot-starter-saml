@@ -32,7 +32,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -75,7 +74,6 @@ import org.springframework.security.saml.websso.WebSSOProfileConsumerHoKImpl;
 import org.springframework.security.saml.websso.WebSSOProfileConsumerImpl;
 import org.springframework.security.saml.websso.WebSSOProfileECPImpl;
 import org.springframework.security.saml.websso.WebSSOProfileOptions;
-import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
@@ -108,10 +106,6 @@ public class SAMLAutoConfiguration {
     public static class SAMLAuthenticationConfiguration {
 
         private final SAMLProperties properties;
-
-        @Lazy
-        @Autowired(required = false)
-        private RememberMeServices rememberMeServices;
 
         @Autowired
         public SAMLAuthenticationConfiguration(SAMLProperties properties) {
@@ -338,7 +332,7 @@ public class SAMLAutoConfiguration {
 
         @Bean
         public SAMLSuccessRedirectHandler successRedirectHandler() {
-            return new SAMLSuccessRedirectHandler(properties, rememberMeServices);
+            return new SAMLSuccessRedirectHandler(properties);
         }
 
         @Bean
