@@ -6,7 +6,6 @@ import nl._42.boot.saml.config.SAMLConfigController;
 import nl._42.boot.saml.user.SAMLUserService;
 import nl._42.boot.saml.web.FriendlyURLComparator;
 import nl._42.boot.saml.web.SAMLDefaultEntryPoint;
-import nl._42.boot.saml.web.SAMLDiscoveryController;
 import nl._42.boot.saml.web.SAMLFailureHandler;
 import nl._42.boot.saml.web.SAMLFilter;
 import nl._42.boot.saml.web.SAMLMetadataDisplayFilter;
@@ -39,7 +38,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.saml.SAMLAuthenticationProvider;
 import org.springframework.security.saml.SAMLBootstrap;
-import org.springframework.security.saml.SAMLDiscovery;
 import org.springframework.security.saml.SAMLEntryPoint;
 import org.springframework.security.saml.SAMLLogoutFilter;
 import org.springframework.security.saml.SAMLLogoutProcessingFilter;
@@ -101,7 +99,7 @@ public class SAMLAutoConfiguration {
     }
 
     @Configuration
-    @ComponentScan(basePackageClasses = SAMLDiscoveryController.class)
+    @ComponentScan(basePackageClasses = SAMLFilter.class)
     @ConditionalOnProperty(name = "saml.enabled", havingValue = "true")
     public static class SAMLAuthenticationConfiguration {
 
@@ -140,7 +138,6 @@ public class SAMLAutoConfiguration {
             SAMLMetadataGenerator generator = new SAMLMetadataGenerator();
             generator.setEntityId(properties.getSpId());
             generator.setEntityBaseURL(properties.getSpBaseUrl());
-            generator.setSamlDiscovery(samlDiscovery());
             generator.setKeyManager(keyManager());
 
             // Only allow for 'post' binding by overriding the bindingsSSO getValue of the parent MetadataGenerator class.
@@ -299,7 +296,6 @@ public class SAMLAutoConfiguration {
             chain.on("/saml/SSO/**", samlWebSSOProcessingFilter());
             chain.on("/saml/SSOHoK/**", samlWebSSOHoKProcessingFilter());
             chain.on("/saml/SingleLogout/**", samlLogoutProcessingFilter());
-            chain.on("/saml/discovery/**", samlDiscovery());
             return chain;
         }
 
@@ -363,13 +359,6 @@ public class SAMLAutoConfiguration {
         @Bean
         public SAMLLogoutProcessingFilter samlLogoutProcessingFilter() {
             return new SAMLLogoutProcessingFilter(successLogoutHandler(), logoutHandler());
-        }
-
-        @Bean
-        public SAMLDiscovery samlDiscovery() {
-            SAMLDiscovery discovery = new SAMLDiscovery();
-            discovery.setIdpSelectionPath("/saml/idpSelection");
-            return discovery;
         }
 
         @Bean
@@ -458,11 +447,6 @@ public class SAMLAutoConfiguration {
 
         @Bean
         public FilterRegistrationBean samlLogoutProcessingRegistration(SAMLLogoutProcessingFilter filter) {
-            return disabledFilterRegistration(filter);
-        }
-
-        @Bean
-        public FilterRegistrationBean samlDiscoveryRegistration(SAMLDiscovery filter) {
             return disabledFilterRegistration(filter);
         }
 
