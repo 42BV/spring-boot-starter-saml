@@ -46,7 +46,7 @@
         <jdk.version>1.8</jdk.version>
 
         <!-- Dependencies -->
-        <spring.boot.version>2.5.4</spring.boot.version>
+        <spring.boot.version>2.6.3</spring.boot.version>
         <spring.security.saml.version>1.0.10.RELEASE</spring.security.saml.version>
     </properties>
 

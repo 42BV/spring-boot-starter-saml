@@ -3,7 +3,6 @@
  */
 package nl._42.boot.saml.web;
 
-import org.springframework.security.saml.SAMLDiscovery;
 import org.springframework.security.saml.metadata.MetadataGenerator;
 
 /**
@@ -13,9 +12,5 @@ import org.springframework.security.saml.metadata.MetadataGenerator;
  * @since Oct 30, 2014
  */
 public class SAMLMetadataGenerator extends MetadataGenerator {
-    
-    public void setSamlDiscovery(SAMLDiscovery samlDiscovery) {
-        this.samlDiscovery = samlDiscovery;
-    }
 
 }
